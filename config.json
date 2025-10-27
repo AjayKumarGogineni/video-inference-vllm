@@ -8,7 +8,7 @@
   },
   
   "OUTPUT": {
-    "MODE": "sglang",
+    "MODE": "vllm",
     "MODES": {
       "vllm": {
         "OUTPUT_FOLDER": "data/outputs/qwenvl_32b",
