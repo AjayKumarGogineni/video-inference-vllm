@@ -35,7 +35,7 @@ fastrlock==0.8.3
 filelock==3.19.1
 fonttools==4.58.0
 frozenlist==1.6.0
-fsspec<=2025.3.0
+fsspec==2025.9.0
 gguf==0.16.3
 googleapis-common-protos==1.70.0
 gputil==1.4.0
