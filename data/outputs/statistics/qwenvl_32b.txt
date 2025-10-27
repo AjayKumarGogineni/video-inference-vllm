@@ -1,0 +1,31 @@
+
+==================================================
+==== Processing Statistics ====
+==================================================
+Model: Qwen/Qwen2.5-VL-32B-Instruct
+Model load time: 250.45s
+Model GPU memory: 145.51 GB
+
+--- Video Load Times ---
+Video Load 1: 0.19s
+Video Load 2: 0.07s
+Video Load 3: 0.03s
+Video Load 4: 0.17s
+Video Load 5: 0.06s
+Average video load time: 0.10s
+Min video load time: 0.03s
+Max video load time: 0.19s
+Std video load time: 0.06s
+
+--- Inference Times ---
+Inference 1: 19.16s
+Inference 2: 7.47s
+Inference 3: 7.03s
+Inference 4: 10.71s
+Inference 5: 6.09s
+Average inference time: 10.09s
+Min inference time: 6.09s
+Max inference time: 19.16s
+Std inference time: 4.79s
+
+Total processing time: 301.57s
