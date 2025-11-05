@@ -54,7 +54,7 @@
   },
 
   "SAMPLING": {
-    "SAMPLE": true,
+    "SAMPLE": false,
     "SAMPLE_SIZE": 4
   }
 }

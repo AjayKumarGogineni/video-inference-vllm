@@ -5,39 +5,25 @@
     "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
     "AUDIO_FOLDER": "data/inputs/audio/",
     "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
-    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth.csv",
-    "STATISTICS_FOLDER": "data/outputs/statistics/"
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
   },
   
   "OUTPUT": {
-    "MODE": "sglang",
+    "MODE": "qwenvl_32b",
     "MODES": {
-      "vllm": {
+      "qwenvl_32b": {
         "OUTPUT_FOLDER": "data/outputs/qwenvl_32b"
-      },
-      "sglang": {
-        "OUTPUT_FOLDER": "data/outputs/qwenvl_32b_sglang"
-  }
+      }
 }
 },
-
-  "MODEL": {
-    "MODEL_NAME": "Qwen/Qwen2.5-VL-32B-Instruct",
-    "DTYPE": "half",
-    "MAX_TOKENS": 2048,
-    "TEMPERATURE": 0.1,
-    "TOP_P": 0.9,
-    "REPETITION_PENALTY": 1.05
-  },
-
   "VIDEO_PROCESSING": {
     "NUM_SEGMENTS": 30,
     "INPUT_SIZE": 224
   },
 
   "FEATURES": {
-    "TRANSCRIBE_AUDIO": true,
-    "EXTRACT_KEY_FRAMES": true,
+    "TRANSCRIBE_AUDIO": false,
+    "EXTRACT_KEY_FRAMES": false,
     "USE_KEY_FRAMES": true
   },
 
@@ -57,7 +43,7 @@
   },
 
   "SAMPLING": {
-    "SAMPLE": false,
+    "SAMPLE": true,
     "SAMPLE_SIZE": 1
   }
 }

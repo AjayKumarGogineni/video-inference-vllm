@@ -276,7 +276,7 @@ def run_inference(config):
 
 def main():
     """Entry point."""
-    config_path = 'config.json'
+    config_path = 'config_sglang.json'
     if len(sys.argv) > 1:
         config_path = sys.argv[1]
     
