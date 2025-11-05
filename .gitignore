@@ -2,3 +2,17 @@ venv
 utils/__pycache__/
 __pycache__/
 requirements_sglang.txt
+sglang_test.py
+main_sglang.py
+
+.env
+
+## data folders
+data/outputs/qwenvl_32b_old/
+data/outputs/qwenvl_32b_sglang/
+data/outputs/statistics_old/
+
+data/inputs/videos/
+data/inputs/audio/
+data/inputs/audio_transcripts/
+data/inputs/key_frames/

@@ -1,0 +1,35 @@
+
+==================================================
+==== Processing Statistics ====
+==================================================
+Model: OpenGVLab/InternVL2_5-26B
+Model load time: 0.00s
+Model GPU memory: 136.59 GB
+
+--- Video Load Times ---
+Video Load 1: 0.18s
+Video Load 2: 0.09s
+Video Load 3: 0.16s
+Video Load 4: 0.07s
+Average video load time: 0.12s
+Min video load time: 0.07s
+Max video load time: 0.18s
+Std video load time: 0.05s
+
+--- Inference Times ---
+Inference 1: 5.37s
+Inference 2: 4.37s
+Inference 3: 4.59s
+Inference 4: 2.40s
+Average inference time: 4.18s
+Min inference time: 2.40s
+Max inference time: 5.37s
+Std inference time: 1.10s
+
+--- GPU Memory Usage per Video ---
+Average: 0.00 GB
+Min: 0.00 GB
+Max: 0.01 GB
+Std: 0.01 GB
+
+Total processing time: 200.59s

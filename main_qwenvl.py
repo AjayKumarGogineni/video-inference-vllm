@@ -1,6 +1,8 @@
 import time
 import os
 import sys
+import json
+import pandas as pd
 
 from utils.config_loader import load_config
 from utils.model_loader import load_model
@@ -9,6 +11,8 @@ from utils.audio_processor import extract_and_transcribe_all
 from utils.key_frame_extractor import extract_key_frames_batch
 from utils.gpu_monitor import get_gpu_memory
 from utils.statistics import save_statistics, print_summary
+from utils.evaluation_utils import evaluate_with_stats
+
 
 def get_video_list(config):
     """Get list of videos to process."""
@@ -36,11 +40,12 @@ def get_audio_transcript(video_id, config):
             return f.read()
     return ''
 
-def prepare_multimodal_input(video_id, video_path, config, processor, system_instruction):
+def prepare_multimodal_input(video_id, video_path, config, processor, system_instructions):
     """Prepare multimodal input for model inference."""
     # Load frames (either from video or pre-extracted key frames)
     if config['FEATURES']['USE_KEY_FRAMES']:
-        images = load_key_frames(video_id, config['PATHS']['KEY_FRAMES_FOLDER'])
+        images = load_key_frames(video_id, config['PATHS']['KEY_FRAMES_FOLDER'],
+        config['VIDEO_PROCESSING']['INPUT_SIZE'])
         if not images:
             print(f"No key frames found for {video_id}, falling back to video frames")
             images = load_video_frames(
@@ -60,7 +65,7 @@ def prepare_multimodal_input(video_id, video_path, config, processor, system_ins
     
     # Build conversation
     conversation = [
-        {"role": "system", "content": [{"type": "text", "text": system_instruction}]},
+        {"role": "system", "content": [{"type": "text", "text": system_instructions}]},
         {"role": "user", "content": (
             [{"type": "image"} for _ in images] +
             [{"type": "text", "text": f"Audio transcript: {audio_transcript.strip()}"}]
@@ -136,7 +141,7 @@ def run_inference(config):
     print(f"STEP {step}: Loading system prompt...")
     print("="*60)
     with open(config['PATHS']['PROMPT_FILE'], 'r') as f:
-        system_instruction = f.read()
+        system_instructions = f.read()
     print("System prompt loaded\n")
     step += 1
     
@@ -150,19 +155,31 @@ def run_inference(config):
     video_load_times = []
     inference_times = []
     video_mem_usages = []
+
+    responses_list = []
     
     video_folder = config['PATHS']['VIDEO_FOLDER']
     output_folder = config['OUTPUT']['OUTPUT_FOLDER']
-    statistics_file = config['OUTPUT']['STATISTICS_FILE']
+    input_size = config['VIDEO_PROCESSING']['INPUT_SIZE']
+    num_frames = config['VIDEO_PROCESSING']['NUM_SEGMENTS']
+    output_folder += f"_inputsize{input_size}_numframes{num_frames}"
+    json_output_folder = output_folder + '/json/'
+    csv_output_folder = output_folder + '/csv/'
+    statistics_folder = output_folder + '/statistics/'
+    statistics_file = statistics_folder + '/inference_statistics.txt'
+
+    model_suffix = config['MODEL']['MODEL_SUFFIX']
 
     if config["FEATURES"]["EXTRACT_KEY_FRAMES"]:
         output_folder += "_keyframes"
         statistics_file = statistics_file.replace(".txt", "_keyframes.txt")
     output_folder += '/'
+    os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(statistics_folder, exist_ok=True)
+    os.makedirs(json_output_folder, exist_ok=True)
+    os.makedirs(csv_output_folder, exist_ok=True)
 
-
-    
-    # Process each video
+    # Process each video sequentially
     for idx, vid in enumerate(video_ids, 1):
         video_id = vid.split('.')[0]
         video_path = os.path.join(video_folder, vid)
@@ -176,7 +193,7 @@ def run_inference(config):
             # Load video and prepare input
             video_load_start = time.time()
             multimodal_input = prepare_multimodal_input(
-                video_id, video_path, config, processor, system_instruction
+                video_id, video_path, config, processor, system_instructions
             )
             video_load_time = time.time() - video_load_start
             video_load_times.append(video_load_time)
@@ -190,9 +207,12 @@ def run_inference(config):
             inference_times.append(inference_time)
             
             # Save output
-            output_path = os.path.join(output_folder, f'{video_id}.json')
+            output_path = os.path.join(json_output_folder, f'{video_id}.json')
             with open(output_path, 'w') as f:
                 f.write(response)
+
+            # Append the response along with video id to responses list with the json keys
+            responses_list.append({"video_id": video_id, **json.loads(response)})
             
             # Track memory after processing
             mem_after = get_gpu_memory().copy()
@@ -208,6 +228,28 @@ def run_inference(config):
             continue
     
     total_time = time.time() - start_time
+    response_df = pd.DataFrame(responses_list)
+    ground_truth_file = config['PATHS']['GROUND_TRUTH_FILE']
+    ground_truth = pd.read_csv(ground_truth_file)
+
+    ground_truth_video_ids = set(ground_truth['video_id'].astype(str).tolist())
+    response_video_ids = set(response_df['video_id'].astype(str).tolist())
+    common_video_ids = ground_truth_video_ids.intersection(response_video_ids)
+    ground_truth = ground_truth[ground_truth['video_id'].astype(str).isin(common_video_ids)]
+    response_df = response_df[response_df['video_id'].astype(str).isin(common_video_ids)]
+
+    # Sort the dataframes by video_id to ensure alignment
+    ground_truth = ground_truth.sort_values(by='video_id').reset_index(drop=True)
+    response_df = response_df.sort_values(by='video_id').reset_index(drop=True)
+    print(f"Length of common videos for evaluation: {len(common_video_ids)}")
+
+    response_df.to_csv(f'{csv_output_folder}/response.csv', index=False)
+
+    evaluation_results = evaluate_with_stats(ground_truth, response_df)
+    print("\nEvaluation Results:")
+    with open(os.path.join(statistics_folder, f'evaluation_results_{model_suffix}.json'), 'w') as f:
+        json.dump(evaluation_results, f, indent=4)
+    # print(json.dumps(evaluation_results, indent=4))
     
     # Save and print statistics
     print("\n" + "="*60)
@@ -228,7 +270,7 @@ def run_inference(config):
 
 def main():
     """Entry point."""
-    config_path = 'config.json'
+    config_path = 'config_qwen.json'
     if len(sys.argv) > 1:
         config_path = sys.argv[1]
     

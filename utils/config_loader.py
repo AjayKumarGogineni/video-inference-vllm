@@ -10,7 +10,6 @@ def load_config(config_path='config.json'):
     mode = config['OUTPUT']['MODE']
     mode_config = config['OUTPUT']['MODES'][mode]
     config['OUTPUT']['OUTPUT_FOLDER'] = mode_config['OUTPUT_FOLDER']
-    config['OUTPUT']['STATISTICS_FILE'] = mode_config['STATISTICS_FILE']
     
     # Create necessary directories
     folders = [

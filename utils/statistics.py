@@ -37,16 +37,9 @@ def save_statistics(config, model_name, model_load_time, model_memory,
 
         write_stats(f, "Video Load", video_load_times)
         write_stats(f, "Inference", inference_times)
-        
-        if batch_times:
-            write_stats(f, "Batch", batch_times)
 
-        if video_mem_usages:
-            f.write(f"\n--- GPU Memory Usage per Video ---\n")
-            f.write(f"Average: {np.mean(video_mem_usages):.2f} GB\n")
-            f.write(f"Min: {np.min(video_mem_usages):.2f} GB\n")
-            f.write(f"Max: {np.max(video_mem_usages):.2f} GB\n")
-            f.write(f"Std: {np.std(video_mem_usages):.2f} GB\n")
+        f.write(f"Average video load time: {np.mean(video_load_times):.2f}s\n")
+        f.write(f"Average inference time: {np.mean(inference_times):.2f}s\n")
 
         f.write(f"\nTotal processing time: {total_time:.2f}s\n")
 
@@ -74,18 +67,10 @@ def print_summary(video_load_times, inference_times, batch_times,
               f"max: {np.max(inference_times):.2f}s, "
               f"std: {np.std(inference_times):.2f}s")
 
-    if batch_times:
-        print(f"Batch - avg: {np.mean(batch_times):.2f}s, "
-              f"min: {np.min(batch_times):.2f}s, "
-              f"max: {np.max(batch_times):.2f}s, "
-              f"std: {np.std(batch_times):.2f}s")
-
-    # if video_mem_usages:
-    #     print(f"\nGPU Memory per Video - avg: {np.mean(video_mem_usages):.2f} GB, "
-    #           f"min: {np.min(video_mem_usages):.2f} GB, "
-    #           f"max: {np.max(video_mem_usages):.2f} GB, "
-    #           f"std: {np.std(video_mem_usages):.2f} GB")
-
+    if video_load_times:
+        print(f"Video Load - avg: {np.mean(video_load_times):.2f}s,")
+    if inference_times:
+        print(f"Inference - avg: {np.mean(inference_times):.2f}s,")
     print(f"\nTotal GPU memory for model: {model_memory:.2f} GB")
     print(f"Total processing time: {total_time:.2f}s")
     print(f"{'='*50}\n")

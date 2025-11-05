@@ -1,0 +1,60 @@
+{
+  "PATHS": {
+    "VIDEO_FOLDER": "data/inputs/videos/",
+    "PROMPT_FILE": "data/prompt.txt",
+    "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
+    "AUDIO_FOLDER": "data/inputs/audio/",
+    "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
+  },
+  
+  "OUTPUT": {
+    "MODE": "qwenvl_32b",
+    "MODES": {
+      "qwenvl_32b": {
+        "OUTPUT_FOLDER": "data/outputs/qwenvl_32b"
+      }
+}
+},
+
+  "MODEL": {
+    "MODEL_NAME": "Qwen/Qwen2.5-VL-32B-Instruct",
+    "MODEL_SUFFIX": "qwenvl_32b",
+    "DTYPE": "half",
+    "MAX_TOKENS": 2048,
+    "TEMPERATURE": 0.1,
+    "TOP_P": 0.9,
+    "REPETITION_PENALTY": 1.05
+  },
+
+  "VIDEO_PROCESSING": {
+    "NUM_SEGMENTS": 30,
+    "INPUT_SIZE": 224
+  },
+
+  "FEATURES": {
+    "TRANSCRIBE_AUDIO": false,
+    "EXTRACT_KEY_FRAMES": false,
+    "USE_KEY_FRAMES": true
+  },
+
+  "AUDIO_TRANSCRIPTION": {
+    "WHISPER_MODEL": "openai/whisper-large-v3",
+    "DEVICE_ID": 0,
+    "CHUNK_LENGTH_S": 30,
+    "BATCH_SIZE": 16
+  },
+
+  "KEY_FRAME_EXTRACTION": {
+    "DETECTION_MODE": "scenedetect",
+    "MAX_WORKERS": 8,
+    "JPEG_QUALITY": 85,
+    "THRESHOLD": 30.0,
+    "MIN_SCENE_LEN": 15
+  },
+
+  "SAMPLING": {
+    "SAMPLE": true,
+    "SAMPLE_SIZE": 4
+  }
+}

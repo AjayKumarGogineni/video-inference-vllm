@@ -86,6 +86,28 @@ Edit `config.json` to customize the pipeline:
 
 ## Usage
 
+### Create ground truth using Gemini model
+
+Update the .env file with your Gemini API key.
+
+```bash
+python create_ground_truth_gemini.py
+```
+
+### Create ground truth using Openai model
+
+The openai models do not take the video as input directly. You need to extract the key frames and audio transcript first using the pipeline and then use those to create the ground truth using the openai models. Documentation: https://platform.openai.com/docs/models/gpt-4o-mini
+Reference code: https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=base64-encoded#analyze-images
+
+Update the .env file with your Openai API key.
+
+Run the create_ground_truth_openai.py script to create the ground truth using openai models.
+
+```bash
+python create_ground_truth_openai.py
+```
+
+
 ### Basic Usage
 
 ```bash
@@ -100,17 +122,17 @@ python main.py path/to/custom_config.json
 
 ### Workflow Steps
 
-1. **[Optional] Extract Key Frames**: If `EXTRACT_KEY_FRAMES: true`
-   - Runs BEFORE model loading
-   - Detects scene changes using PySceneDetect or OpenCV
-   - Saves frames to `KEY_FRAMES_FOLDER`
-   - Skips already processed videos
-
-2. **[Optional] Transcribe Audio**: If `TRANSCRIBE_AUDIO: true`
+1. **[Required the first time the videos are loaded, can be set to false once the transcripts are generated] Transcribe Audio**: If `TRANSCRIBE_AUDIO: true`
    - Runs BEFORE model loading
    - Extracts audio as MP3 from videos
    - Transcribes using Whisper Large V3
    - Skips videos with existing transcripts
+
+2. **[Optional] Extract Key Frames**: If `EXTRACT_KEY_FRAMES: true`
+   - Runs BEFORE model loading
+   - Detects scene changes using PySceneDetect or OpenCV
+   - Saves frames to `KEY_FRAMES_FOLDER`
+   - Skips already processed videos
 
 3. **Load Model**: Initialize VLM with tensor parallelism
 
@@ -125,13 +147,15 @@ python main.py path/to/custom_config.json
 
 6. **Save Statistics**: Timing and memory metrics saved to `STATISTICS_FILE`
 
-## Output
+## Output for Qwen and Intern vl scripts
 
 ### Generated Files
 
-- `{VIDEO_ID}.json`: Structured analysis for each video
+- `json/{VIDEO_ID}.json`: Structured analysis for each video
+- `csv/file_name.csv`: CSV summary of all videos
 - `missed_videos.txt`: List of failed videos
 - Statistics file: Comprehensive performance metrics
+- Bleu score for the generated summaries by comparing them with ground truth summaries and classification accuracy of the generated categories.
 
 ### JSON Schema
 
@@ -157,6 +181,10 @@ python main.py path/to/custom_config.json
 }
 ```
 
+### Things required to change the output schema:
+- Change the system prompt file to include/exclude fields or modify instructions
+- Update the OutputJson class in utils/model_loader.py to reflect any schema changes
+
 ## Performance Tracking
 
 The pipeline tracks:
@@ -172,7 +200,7 @@ Statistics are logged to console and saved to the configured statistics file.
 
 - Python 3.11
 - CUDA-capable GPU
-- HuggingFace account (for model access)
+- HuggingFace account (for model access) -> Optional
 - Sufficient disk space for videos and outputs
 
 ## Environment Variables
@@ -195,6 +223,6 @@ export HF_HOME=/path/to/huggingface/cache  # Optional: Custom HF cache location
 
 **Missing Audio**: Some videos may not have audio tracks (logged as warnings)
 
-**Failed Videos**: Check `missed_videos.txt` for errors
+**Failed Videos**: Check `missed_videos.txt` for the list of videos that failed during processing
 
 **Slow Processing**: Adjust `MAX_WORKERS` for key frame extraction or check GPU utilization
