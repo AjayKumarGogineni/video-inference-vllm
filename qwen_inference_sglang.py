@@ -215,9 +215,9 @@ def run_inference(config):
     video_folder = config['PATHS']['VIDEO_FOLDER']
     output_folder = config['OUTPUT']['OUTPUT_FOLDER']
 
-    json_folder = output_folder + "json/"
-    csv_folder = output_folder + "csv/"
-    stats_folder = output_folder + "statistics/"
+    json_folder = output_folder + "/json/"
+    csv_folder = output_folder + "/csv/"
+    stats_folder = output_folder + "/statistics/"
     os.makedirs(json_folder, exist_ok=True)
     os.makedirs(csv_folder, exist_ok=True)
     os.makedirs(stats_folder, exist_ok=True)
