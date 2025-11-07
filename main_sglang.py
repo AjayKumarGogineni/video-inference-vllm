@@ -3,6 +3,8 @@ import os
 import sys
 import torch
 import sglang as sgl
+import pandas as pd
+import json
 
 from utils.config_loader import load_config
 from utils.video_processor import load_video_frames, load_key_frames
@@ -10,6 +12,7 @@ from utils.audio_processor import extract_and_transcribe_all
 from utils.key_frame_extractor import extract_key_frames_batch
 from utils.gpu_monitor import get_gpu_memory
 from utils.statistics import save_statistics, print_summary
+from utils.evaluation_utils import evaluate_with_stats
 
 def get_video_list(config):
     """Get list of videos to process."""
@@ -69,7 +72,11 @@ def prepare_multimodal_input(video_id, video_path, config, system_instruction):
     """Prepare messages for SGLang inference correctly."""
     # Load frames
     if config['FEATURES']['USE_KEY_FRAMES']:
-        images = load_key_frames(video_id, config['PATHS']['KEY_FRAMES_FOLDER'])
+        images = load_key_frames(
+            video_id,
+            config['PATHS']['KEY_FRAMES_FOLDER'],
+            config['VIDEO_PROCESSING']['INPUT_SIZE']
+        )
         if not images:
             images = load_video_frames(
                 video_path,
@@ -204,13 +211,19 @@ def run_inference(config):
     print("="*60)
     
     video_load_times, inference_times, video_mem_usages = [], [], []
+    responses = []
     video_folder = config['PATHS']['VIDEO_FOLDER']
     output_folder = config['OUTPUT']['OUTPUT_FOLDER']
-    statistics_file = config['OUTPUT']['STATISTICS_FILE']
+
+    json_folder = output_folder + "json/"
+    csv_folder = output_folder + "csv/"
+    stats_folder = output_folder + "statistics/"
+    os.makedirs(json_folder, exist_ok=True)
+    os.makedirs(csv_folder, exist_ok=True)
+    os.makedirs(stats_folder, exist_ok=True)
     
     if config["FEATURES"]["EXTRACT_KEY_FRAMES"]:
         output_folder += "_keyframes"
-        statistics_file = statistics_file.replace(".txt", "_keyframes.txt")
     output_folder += '/'
     
     for idx, vid in enumerate(video_ids, 1):
@@ -231,6 +244,7 @@ def run_inference(config):
             inference_start = time.time()
             state = video_analysis_prompt.run(messages=messages, sampling_params=sampling_params)
             response = state["response"].replace('```json', '').replace('```', '').strip()
+            responses.append({"video_id": video_id, **json.loads(response)})
             inference_time = time.time() - inference_start
             inference_times.append(inference_time)
             
@@ -251,28 +265,44 @@ def run_inference(config):
                 f.write(f'{video_id}\n')
             continue
     
+    # Save CSV
+    df = pd.DataFrame(responses)
+    df.to_csv(os.path.join(csv_folder, "response.csv"), index=False)
+
+    # Evaluation
+    ground_truth = pd.read_csv(config['PATHS']['GROUND_TRUTH_FILE'])
+    common = set(ground_truth.video_id.astype(str)) & set(df.video_id.astype(str))
+    gt = ground_truth[ground_truth.video_id.astype(str).isin(common)]
+    df = df[df.video_id.astype(str).isin(common)]
+
+    gt = gt.sort_values("video_id").reset_index(drop=True)
+    df = df.sort_values("video_id").reset_index(drop=True)
     # Shutdown runtime
-    runtime.shutdown()
+    # runtime.shutdown()
     
+    eval_results = evaluate_with_stats(gt, df)
+    with open(os.path.join(stats_folder, "evaluation.json"), "w") as f:
+        json.dump(eval_results, f, indent=4)
+
     total_time = time.time() - start_time
     
     # Save and print statistics
     print("\n" + "="*60)
     print("Saving statistics...")
     print("="*60)
+    # Stats
     save_statistics(
         config, config['MODEL']['MODEL_NAME'], model_load_time, model_memory,
-        video_load_times, inference_times, [], video_mem_usages, total_time,
-        extract_frames_time, extract_audio_time, statistics_file
-    )
-    
-    print_summary(
         video_load_times, inference_times, [],
-        video_mem_usages, model_memory, total_time, extract_frames_time, extract_audio_time
+        video_mem_usages, time.time() - start_time,
+        extract_frames_time=None, extract_audio_time=None,
+        statistics_file=os.path.join(stats_folder, "inference_statistics.txt")
     )
+
+    print("\n✅ Inference complete!")
     
-    print(f"\nAll outputs saved to: {output_folder}")
-    print(f"Statistics saved to: {statistics_file}")
+    # print(f"\nAll outputs saved to: {output_folder}")
+    # print(f"Statistics saved to: {statistics_file}")
 
 def main():
     """Entry point."""

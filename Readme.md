@@ -57,7 +57,23 @@ pip install -r requirements.txt
 
 ## Configuration
 
-Edit `config.json` to customize the pipeline:
+Edit `config_preprocess.json` file to set the parameters for pre-processing steps, audio transcription and key frame extraction.
+
+**PATHS**: Input/output directory paths
+- `VIDEO_FOLDER`: Source videos directory
+- `AUDIO_FOLDER`: Extracted audio files
+- `AUDIO_TRANSCRIPT_FOLDER`: Audio transcripts
+- `KEY_FRAMES_FOLDER`: Extracted key frames
+
+**FEATURES**: Toggle functionality
+- `TRANSCRIBE_AUDIO`: Enable audio transcription
+- `EXTRACT_KEY_FRAMES`: Run key frame extraction
+
+**SAMPLING**: Test on subset
+- `SAMPLE`: Enable sampling mode
+- `SAMPLE_SIZE`: Number of videos to process
+
+Edit `config_qwen.json` to customize the pipeline:
 
 ### Key Configuration Options
 
@@ -76,8 +92,6 @@ Edit `config.json` to customize the pipeline:
 - `INPUT_SIZE`: Frame resize dimension
 
 **FEATURES**: Toggle functionality
-- `TRANSCRIBE_AUDIO`: Enable audio transcription
-- `EXTRACT_KEY_FRAMES`: Run key frame extraction
 - `USE_KEY_FRAMES`: Use pre-extracted key frames instead of uniform sampling
 
 **SAMPLING**: Test on subset
@@ -93,6 +107,10 @@ Update the .env file with your Gemini API key.
 ```bash
 python create_ground_truth_gemini.py
 ```
+Reasons for failing:
+- The API call will fail if the number of requests per minute exceeds the quota. You can add a sleep timer in the script to avoid this issue.
+- The API can process a maximum of 60 minutes of video (3600 frames) in a single request which corresponds to 1 million tokens. 
+- The API can fail if the video has any sensitive content such as hate speech, adult content, violence etc.
 
 ### Create ground truth using Openai model
 

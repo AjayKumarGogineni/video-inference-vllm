@@ -1,0 +1,9 @@
+{
+  "summary": "The video discusses a security breach involving Discord, where a shady website called 'spy.pet' was selling the messaging history of over 114 million Discord users by scraping data from over 15,000 servers. Around the time this issue arose, Discord updated their terms of service, making it difficult for users to sue them in case of a class-action lawsuit. However, Discord acknowledged the problem and began banning accounts associated with spy.pet, leading to the site being taken offline. Despite this, spy.pet later posted on Telegram about planned fixes and a backup website, along with a reference to the song 'Tubthumping' by Chumbawamba. The speaker notes that many users may not be concerned since the affected servers were publicly accessible, but emphasizes that there is still a level of privacy inherent in Discord due to the need to know specific links or the existence of certain communities.",
+  "category": "News",
+  "keywords": "Discord, spy.pet, messaging history, data breach, terms of service, class action lawsuit, privacy, Telegram, Tubthumping, Chumbawamba",
+  "creator_demographic": "Age: Unknown, Gender: Unknown, Geographic Location: Unknown",
+  "sentiment": "Neutral",
+  "tone": "Neutral",
+  "threatening_content": "No"
+}

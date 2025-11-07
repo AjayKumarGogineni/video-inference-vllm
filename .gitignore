@@ -9,7 +9,7 @@ main_sglang.py
 
 ## data folders
 data/outputs/qwenvl_32b_old/
-data/outputs/qwenvl_32b_sglang/
+# data/outputs/qwenvl_32b_sglang/
 data/outputs/statistics_old/
 
 data/inputs/videos/

@@ -29,7 +29,7 @@
 
   "VIDEO_PROCESSING": {
     "NUM_SEGMENTS": 30,
-    "INPUT_SIZE": 224
+    "INPUT_SIZE": 360
   },
 
   "FEATURES": {

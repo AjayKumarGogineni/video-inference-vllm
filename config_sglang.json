@@ -5,8 +5,7 @@
     "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
     "AUDIO_FOLDER": "data/inputs/audio/",
     "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
-    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth.csv",
-    "STATISTICS_FOLDER": "data/outputs/statistics/"
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
   },
   
   "OUTPUT": {
@@ -32,12 +31,12 @@
 
   "VIDEO_PROCESSING": {
     "NUM_SEGMENTS": 30,
-    "INPUT_SIZE": 224
+    "INPUT_SIZE": 360
   },
 
   "FEATURES": {
-    "TRANSCRIBE_AUDIO": true,
-    "EXTRACT_KEY_FRAMES": true,
+    "TRANSCRIBE_AUDIO": false,
+    "EXTRACT_KEY_FRAMES": false,
     "USE_KEY_FRAMES": true
   },
 
@@ -57,7 +56,7 @@
   },
 
   "SAMPLING": {
-    "SAMPLE": false,
-    "SAMPLE_SIZE": 1
+    "SAMPLE": true,
+    "SAMPLE_SIZE": 4
   }
 }

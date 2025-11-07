@@ -5,18 +5,17 @@
     "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
     "AUDIO_FOLDER": "data/inputs/audio/",
     "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
-    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv",
-    "STATISTICS_FOLDER": "data/outputs/statistics/"
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
   },
-  
+
   "OUTPUT": {
     "MODE": "internvl_26b",
     "MODES": {
       "internvl_26b": {
         "OUTPUT_FOLDER": "data/outputs/internvl_26b"
       }
-}
-},
+    }
+  },
 
   "MODEL": {
     "MODEL_NAME": "OpenGVLab/InternVL2_5-26B",
@@ -30,7 +29,7 @@
 
   "VIDEO_PROCESSING": {
     "NUM_SEGMENTS": 30,
-    "INPUT_SIZE": 448
+    "INPUT_SIZE": 360
   },
 
   "FEATURES": {
@@ -55,7 +54,7 @@
   },
 
   "SAMPLING": {
-    "SAMPLE": true,
+    "SAMPLE": false,
     "SAMPLE_SIZE": 4
   }
 }

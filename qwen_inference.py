@@ -11,6 +11,7 @@ from utils.gpu_monitor import get_gpu_memory
 from utils.statistics import save_statistics, print_summary
 from utils.evaluation_utils import evaluate_with_stats
 
+os.environ.setdefault("CUDA_LAUNCH_BLOCKING", "1")
 
 def get_video_list(config):
     """Get list of videos to process."""
@@ -54,6 +55,7 @@ def prepare_multimodal_input(video_id, video_path, config, processor, system_pro
                 config['VIDEO_PROCESSING']['NUM_SEGMENTS'],
                 config['VIDEO_PROCESSING']['INPUT_SIZE']
             )
+        # config[]
     else:
         images = load_video_frames(
             video_path,
@@ -110,12 +112,18 @@ def run_inference(config):
     input_size = config['VIDEO_PROCESSING']['INPUT_SIZE']
     num_frames = config['VIDEO_PROCESSING']['NUM_SEGMENTS']
 
-    output_folder += f"_inputsize{input_size}_numframes{num_frames}/"
-    os.makedirs(output_folder, exist_ok=True)
+    if config['FEATURES']['USE_KEY_FRAMES']:
+        output_folder += "_keyframes_"
+    else:
+        output_folder += "_all_frames_"
+
+    output_folder += f"inputsize{input_size}_numframes{num_frames}/"
 
     json_folder = output_folder + "json/"
     csv_folder = output_folder + "csv/"
     stats_folder = output_folder + "statistics/"
+
+    os.makedirs(output_folder, exist_ok=True)
     os.makedirs(json_folder, exist_ok=True)
     os.makedirs(csv_folder, exist_ok=True)
     os.makedirs(stats_folder, exist_ok=True)

@@ -1,0 +1,577 @@
+
+==================================================
+==== Processing Statistics ====
+==================================================
+Model: Qwen/Qwen2.5-VL-32B-Instruct
+Model load time: 234.09s
+Model GPU memory: 146.41 GB
+
+--- Video Load Times ---
+Video Load 1: 0.38s
+Video Load 2: 0.96s
+Video Load 3: 1.17s
+Video Load 4: 0.55s
+Video Load 5: 5.30s
+Video Load 6: 0.42s
+Video Load 7: 0.45s
+Video Load 8: 2.65s
+Video Load 9: 2.54s
+Video Load 10: 2.43s
+Video Load 11: 2.24s
+Video Load 12: 1.72s
+Video Load 13: 2.13s
+Video Load 14: 0.43s
+Video Load 15: 1.09s
+Video Load 16: 3.71s
+Video Load 17: 2.30s
+Video Load 18: 3.62s
+Video Load 19: 3.03s
+Video Load 20: 2.36s
+Video Load 21: 1.78s
+Video Load 22: 0.22s
+Video Load 23: 3.41s
+Video Load 24: 2.00s
+Video Load 25: 1.63s
+Video Load 26: 1.78s
+Video Load 27: 3.19s
+Video Load 28: 5.39s
+Video Load 29: 4.00s
+Video Load 30: 1.68s
+Video Load 31: 1.84s
+Video Load 32: 2.11s
+Video Load 33: 3.81s
+Video Load 34: 6.51s
+Video Load 35: 1.98s
+Video Load 36: 0.81s
+Video Load 37: 3.32s
+Video Load 38: 2.16s
+Video Load 39: 2.04s
+Video Load 40: 0.84s
+Video Load 41: 0.90s
+Video Load 42: 1.61s
+Video Load 43: 4.06s
+Video Load 44: 2.01s
+Video Load 45: 0.69s
+Video Load 46: 1.59s
+Video Load 47: 2.67s
+Video Load 48: 2.17s
+Video Load 49: 1.20s
+Video Load 50: 1.50s
+Video Load 51: 1.22s
+Video Load 52: 2.43s
+Video Load 53: 0.57s
+Video Load 54: 4.01s
+Video Load 55: 1.07s
+Video Load 56: 3.63s
+Video Load 57: 0.59s
+Video Load 58: 5.76s
+Video Load 59: 0.76s
+Video Load 60: 1.08s
+Video Load 61: 4.35s
+Video Load 62: 0.18s
+Video Load 63: 1.55s
+Video Load 64: 1.43s
+Video Load 65: 4.36s
+Video Load 66: 1.25s
+Video Load 67: 2.40s
+Video Load 68: 0.94s
+Video Load 69: 1.41s
+Video Load 70: 2.04s
+Video Load 71: 1.01s
+Video Load 72: 1.11s
+Video Load 73: 4.35s
+Video Load 74: 0.59s
+Video Load 75: 2.53s
+Video Load 76: 1.65s
+Video Load 77: 2.08s
+Video Load 78: 1.85s
+Video Load 79: 1.65s
+Video Load 80: 3.45s
+Video Load 81: 2.18s
+Video Load 82: 0.87s
+Video Load 83: 2.68s
+Video Load 84: 0.60s
+Video Load 85: 0.52s
+Video Load 86: 0.54s
+Video Load 87: 2.99s
+Video Load 88: 4.48s
+Video Load 89: 2.99s
+Video Load 90: 4.64s
+Video Load 91: 3.21s
+Video Load 92: 1.00s
+Video Load 93: 1.32s
+Video Load 94: 2.15s
+Video Load 95: 5.91s
+Video Load 96: 1.80s
+Video Load 97: 2.50s
+Video Load 98: 1.44s
+Video Load 99: 1.25s
+Video Load 100: 1.63s
+Video Load 101: 1.86s
+Video Load 102: 3.49s
+Video Load 103: 4.33s
+Video Load 104: 3.67s
+Video Load 105: 2.77s
+Video Load 106: 2.61s
+Video Load 107: 0.50s
+Video Load 108: 0.38s
+Video Load 109: 1.49s
+Video Load 110: 1.23s
+Video Load 111: 3.69s
+Video Load 112: 2.31s
+Video Load 113: 3.50s
+Video Load 114: 0.40s
+Video Load 115: 4.92s
+Video Load 116: 3.87s
+Video Load 117: 0.43s
+Video Load 118: 0.72s
+Video Load 119: 2.22s
+Video Load 120: 2.45s
+Video Load 121: 1.12s
+Video Load 122: 3.21s
+Video Load 123: 2.74s
+Video Load 124: 3.24s
+Video Load 125: 0.89s
+Video Load 126: 0.60s
+Video Load 127: 2.74s
+Video Load 128: 0.64s
+Video Load 129: 0.69s
+Video Load 130: 1.37s
+Video Load 131: 3.12s
+Video Load 132: 0.48s
+Video Load 133: 2.09s
+Video Load 134: 4.20s
+Video Load 135: 0.48s
+Video Load 136: 2.87s
+Video Load 137: 1.45s
+Video Load 138: 1.96s
+Video Load 139: 0.55s
+Video Load 140: 4.80s
+Video Load 141: 0.78s
+Video Load 142: 2.36s
+Video Load 143: 3.54s
+Video Load 144: 0.58s
+Video Load 145: 0.62s
+Video Load 146: 3.50s
+Video Load 147: 0.79s
+Video Load 148: 4.40s
+Video Load 149: 1.78s
+Video Load 150: 2.86s
+Video Load 151: 0.49s
+Video Load 152: 1.73s
+Video Load 153: 0.71s
+Video Load 154: 5.01s
+Video Load 155: 4.58s
+Video Load 156: 0.52s
+Video Load 157: 3.72s
+Video Load 158: 1.10s
+Video Load 159: 1.05s
+Video Load 160: 2.27s
+Video Load 161: 1.48s
+Video Load 162: 2.41s
+Video Load 163: 0.58s
+Video Load 164: 0.63s
+Video Load 165: 1.92s
+Video Load 166: 2.21s
+Video Load 167: 0.52s
+Video Load 168: 2.62s
+Video Load 169: 2.91s
+Video Load 170: 4.41s
+Video Load 171: 2.09s
+Video Load 172: 2.79s
+Video Load 173: 5.24s
+Video Load 174: 4.89s
+Video Load 175: 0.50s
+Video Load 176: 2.55s
+Video Load 177: 1.96s
+Video Load 178: 2.27s
+Video Load 179: 1.40s
+Video Load 180: 1.64s
+Video Load 181: 3.66s
+Video Load 182: 4.54s
+Video Load 183: 3.62s
+Video Load 184: 2.77s
+Video Load 185: 3.26s
+Video Load 186: 2.06s
+Video Load 187: 5.08s
+Video Load 188: 0.72s
+Video Load 189: 2.19s
+Video Load 190: 4.03s
+Video Load 191: 0.86s
+Video Load 192: 3.28s
+Video Load 193: 2.68s
+Video Load 194: 0.44s
+Video Load 195: 0.89s
+Video Load 196: 1.44s
+Video Load 197: 0.68s
+Video Load 198: 0.74s
+Video Load 199: 3.56s
+Video Load 200: 0.57s
+Video Load 201: 4.19s
+Video Load 202: 1.77s
+Video Load 203: 0.81s
+Video Load 204: 3.61s
+Video Load 205: 2.74s
+Video Load 206: 2.78s
+Video Load 207: 1.48s
+Video Load 208: 0.52s
+Video Load 209: 0.80s
+Video Load 210: 2.30s
+Video Load 211: 0.97s
+Video Load 212: 1.49s
+Video Load 213: 4.53s
+Video Load 214: 1.23s
+Video Load 215: 1.06s
+Video Load 216: 1.89s
+Video Load 217: 2.37s
+Video Load 218: 2.83s
+Video Load 219: 2.28s
+Video Load 220: 3.34s
+Video Load 221: 0.50s
+Video Load 222: 2.08s
+Video Load 223: 0.68s
+Video Load 224: 2.72s
+Video Load 225: 4.03s
+Video Load 226: 0.75s
+Video Load 227: 3.13s
+Video Load 228: 1.86s
+Video Load 229: 0.60s
+Video Load 230: 0.99s
+Video Load 231: 0.91s
+Video Load 232: 0.93s
+Video Load 233: 1.35s
+Video Load 234: 3.77s
+Video Load 235: 2.30s
+Video Load 236: 0.36s
+Video Load 237: 0.46s
+Video Load 238: 8.49s
+Video Load 239: 3.06s
+Video Load 240: 1.22s
+Video Load 241: 1.76s
+Video Load 242: 0.51s
+Video Load 243: 2.49s
+Video Load 244: 0.53s
+Video Load 245: 0.75s
+Video Load 246: 2.98s
+Video Load 247: 2.06s
+Video Load 248: 2.41s
+Video Load 249: 1.98s
+Video Load 250: 0.74s
+Video Load 251: 0.62s
+Video Load 252: 0.56s
+Video Load 253: 0.56s
+Video Load 254: 5.20s
+Video Load 255: 2.26s
+Video Load 256: 1.28s
+Video Load 257: 2.51s
+Video Load 258: 0.51s
+Video Load 259: 0.65s
+Video Load 260: 0.83s
+Video Load 261: 0.52s
+Video Load 262: 0.50s
+Video Load 263: 1.62s
+Video Load 264: 1.51s
+Video Load 265: 0.93s
+Video Load 266: 3.19s
+Video Load 267: 2.21s
+Video Load 268: 3.59s
+Video Load 269: 5.16s
+Video Load 270: 4.46s
+Video Load 271: 4.33s
+Video Load 272: 0.73s
+Video Load 273: 3.12s
+Video Load 274: 2.52s
+Video Load 275: 2.10s
+Video Load 276: 0.36s
+Video Load 277: 1.19s
+Average video load time: 2.12s
+Min video load time: 0.18s
+Max video load time: 8.49s
+Std video load time: 1.42s
+
+--- Inference Times ---
+Inference 1: 17.79s
+Inference 2: 10.30s
+Inference 3: 9.99s
+Inference 4: 9.45s
+Inference 5: 10.99s
+Inference 6: 9.92s
+Inference 7: 11.42s
+Inference 8: 11.02s
+Inference 9: 12.64s
+Inference 10: 10.35s
+Inference 11: 11.86s
+Inference 12: 10.23s
+Inference 13: 9.79s
+Inference 14: 8.87s
+Inference 15: 10.24s
+Inference 16: 13.73s
+Inference 17: 9.69s
+Inference 18: 9.98s
+Inference 19: 13.85s
+Inference 20: 12.14s
+Inference 21: 11.59s
+Inference 22: 9.31s
+Inference 23: 10.25s
+Inference 24: 12.02s
+Inference 25: 11.90s
+Inference 26: 10.37s
+Inference 27: 11.21s
+Inference 28: 13.55s
+Inference 29: 11.54s
+Inference 30: 10.54s
+Inference 31: 9.95s
+Inference 32: 13.19s
+Inference 33: 12.45s
+Inference 34: 11.91s
+Inference 35: 11.70s
+Inference 36: 10.57s
+Inference 37: 13.51s
+Inference 38: 11.03s
+Inference 39: 13.86s
+Inference 40: 9.38s
+Inference 41: 66.05s
+Inference 42: 10.15s
+Inference 43: 8.58s
+Inference 44: 10.86s
+Inference 45: 9.31s
+Inference 46: 10.73s
+Inference 47: 10.09s
+Inference 48: 10.27s
+Inference 49: 10.90s
+Inference 50: 9.27s
+Inference 51: 13.22s
+Inference 52: 13.57s
+Inference 53: 9.92s
+Inference 54: 11.25s
+Inference 55: 10.20s
+Inference 56: 12.15s
+Inference 57: 8.36s
+Inference 58: 13.43s
+Inference 59: 9.74s
+Inference 60: 9.52s
+Inference 61: 11.20s
+Inference 62: 9.82s
+Inference 63: 9.98s
+Inference 64: 10.37s
+Inference 65: 12.02s
+Inference 66: 9.71s
+Inference 67: 9.47s
+Inference 68: 9.97s
+Inference 69: 9.92s
+Inference 70: 14.10s
+Inference 71: 69.63s
+Inference 72: 9.53s
+Inference 73: 13.06s
+Inference 74: 10.86s
+Inference 75: 11.97s
+Inference 76: 10.64s
+Inference 77: 9.90s
+Inference 78: 9.30s
+Inference 79: 9.50s
+Inference 80: 12.40s
+Inference 81: 13.55s
+Inference 82: 11.51s
+Inference 83: 12.60s
+Inference 84: 7.66s
+Inference 85: 9.17s
+Inference 86: 9.73s
+Inference 87: 12.23s
+Inference 88: 10.33s
+Inference 89: 10.43s
+Inference 90: 11.90s
+Inference 91: 12.16s
+Inference 92: 9.83s
+Inference 93: 10.23s
+Inference 94: 9.96s
+Inference 95: 11.87s
+Inference 96: 10.36s
+Inference 97: 12.56s
+Inference 98: 9.70s
+Inference 99: 10.17s
+Inference 100: 10.05s
+Inference 101: 12.36s
+Inference 102: 13.39s
+Inference 103: 11.07s
+Inference 104: 12.12s
+Inference 105: 12.01s
+Inference 106: 13.67s
+Inference 107: 9.61s
+Inference 108: 9.88s
+Inference 109: 11.93s
+Inference 110: 9.44s
+Inference 111: 10.87s
+Inference 112: 9.28s
+Inference 113: 10.81s
+Inference 114: 9.24s
+Inference 115: 11.62s
+Inference 116: 11.48s
+Inference 117: 9.70s
+Inference 118: 10.87s
+Inference 119: 10.75s
+Inference 120: 11.21s
+Inference 121: 10.18s
+Inference 122: 9.26s
+Inference 123: 15.86s
+Inference 124: 10.49s
+Inference 125: 9.96s
+Inference 126: 9.90s
+Inference 127: 9.97s
+Inference 128: 8.93s
+Inference 129: 9.36s
+Inference 130: 10.06s
+Inference 131: 10.04s
+Inference 132: 9.71s
+Inference 133: 9.83s
+Inference 134: 12.91s
+Inference 135: 10.05s
+Inference 136: 10.46s
+Inference 137: 11.22s
+Inference 138: 10.49s
+Inference 139: 9.33s
+Inference 140: 11.22s
+Inference 141: 10.24s
+Inference 142: 10.03s
+Inference 143: 11.83s
+Inference 144: 9.64s
+Inference 145: 10.97s
+Inference 146: 11.91s
+Inference 147: 9.03s
+Inference 148: 11.54s
+Inference 149: 8.42s
+Inference 150: 10.73s
+Inference 151: 8.02s
+Inference 152: 10.38s
+Inference 153: 9.49s
+Inference 154: 12.63s
+Inference 155: 12.27s
+Inference 156: 10.38s
+Inference 157: 12.35s
+Inference 158: 8.33s
+Inference 159: 7.97s
+Inference 160: 10.43s
+Inference 161: 11.74s
+Inference 162: 9.36s
+Inference 163: 9.49s
+Inference 164: 9.75s
+Inference 165: 11.79s
+Inference 166: 10.77s
+Inference 167: 8.90s
+Inference 168: 11.70s
+Inference 169: 12.81s
+Inference 170: 14.55s
+Inference 171: 12.87s
+Inference 172: 10.38s
+Inference 173: 11.87s
+Inference 174: 13.30s
+Inference 175: 10.00s
+Inference 176: 10.95s
+Inference 177: 11.71s
+Inference 178: 11.43s
+Inference 179: 11.34s
+Inference 180: 10.23s
+Inference 181: 13.20s
+Inference 182: 10.63s
+Inference 183: 11.33s
+Inference 184: 10.65s
+Inference 185: 13.31s
+Inference 186: 11.70s
+Inference 187: 13.36s
+Inference 188: 9.56s
+Inference 189: 12.36s
+Inference 190: 11.55s
+Inference 191: 10.44s
+Inference 192: 11.93s
+Inference 193: 11.38s
+Inference 194: 10.05s
+Inference 195: 9.63s
+Inference 196: 7.98s
+Inference 197: 10.32s
+Inference 198: 10.60s
+Inference 199: 11.53s
+Inference 200: 8.83s
+Inference 201: 11.63s
+Inference 202: 12.34s
+Inference 203: 10.04s
+Inference 204: 15.12s
+Inference 205: 9.59s
+Inference 206: 10.48s
+Inference 207: 12.82s
+Inference 208: 8.62s
+Inference 209: 9.36s
+Inference 210: 10.63s
+Inference 211: 11.83s
+Inference 212: 13.68s
+Inference 213: 13.42s
+Inference 214: 9.86s
+Inference 215: 10.13s
+Inference 216: 13.23s
+Inference 217: 12.72s
+Inference 218: 11.58s
+Inference 219: 8.96s
+Inference 220: 12.06s
+Inference 221: 9.26s
+Inference 222: 10.20s
+Inference 223: 8.33s
+Inference 224: 11.41s
+Inference 225: 9.16s
+Inference 226: 9.36s
+Inference 227: 12.14s
+Inference 228: 11.78s
+Inference 229: 10.46s
+Inference 230: 11.29s
+Inference 231: 9.54s
+Inference 232: 11.16s
+Inference 233: 10.21s
+Inference 234: 11.36s
+Inference 235: 13.58s
+Inference 236: 8.77s
+Inference 237: 9.54s
+Inference 238: 12.29s
+Inference 239: 11.01s
+Inference 240: 9.39s
+Inference 241: 9.94s
+Inference 242: 9.39s
+Inference 243: 10.23s
+Inference 244: 10.60s
+Inference 245: 8.41s
+Inference 246: 12.54s
+Inference 247: 9.82s
+Inference 248: 11.24s
+Inference 249: 13.38s
+Inference 250: 10.47s
+Inference 251: 9.71s
+Inference 252: 8.37s
+Inference 253: 10.45s
+Inference 254: 14.64s
+Inference 255: 9.86s
+Inference 256: 9.84s
+Inference 257: 11.80s
+Inference 258: 9.20s
+Inference 259: 9.86s
+Inference 260: 10.34s
+Inference 261: 7.45s
+Inference 262: 10.32s
+Inference 263: 8.41s
+Inference 264: 9.80s
+Inference 265: 10.01s
+Inference 266: 13.39s
+Inference 267: 10.29s
+Inference 268: 12.01s
+Inference 269: 11.74s
+Inference 270: 11.19s
+Inference 271: 12.72s
+Inference 272: 8.85s
+Inference 273: 12.38s
+Inference 274: 10.88s
+Inference 275: 10.61s
+Inference 276: 10.43s
+Inference 277: 10.66s
+Average inference time: 11.27s
+Min inference time: 7.45s
+Max inference time: 69.63s
+Std inference time: 5.06s
+Average video load time: 2.12s
+Average inference time: 11.27s
+
+Total processing time: 3999.30s
