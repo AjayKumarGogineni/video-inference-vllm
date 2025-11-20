@@ -110,9 +110,11 @@ def process_single_video(video_path, output_base, config):
         return video_name, "no_scenes", count
     return video_name, "ok", count
 
-def extract_key_frames_batch(video_folder, output_folder, config):
+def extract_key_frames_batch(video_ids, output_folder, config):
     """Extract key frames from all videos in folder."""
-    video_files = [f for f in os.listdir(video_folder) if not f.startswith('.')]
+    video_folder = config['PATHS']['VIDEO_FOLDER']
+
+    video_files = video_ids#[f for f in os.listdir(video_folder) if not f.startswith('.')]
     results = []
     
     max_workers = config['KEY_FRAME_EXTRACTION']['MAX_WORKERS']

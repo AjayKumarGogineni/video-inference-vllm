@@ -33,9 +33,11 @@ def load_model(config):
     llm = LLM(
         model=model_name,
         trust_remote_code=True,
+        gpu_memory_utilization=0.90,
         limit_mm_per_prompt={"image": num_segments},
-        tensor_parallel_size=torch.cuda.device_count(),
-        dtype=config['MODEL']['DTYPE']
+        tensor_parallel_size=2,#torch.cuda.device_count(),
+        dtype=config['MODEL']['DTYPE'],
+        max_model_len = 32768
     )
     
     processor = AutoProcessor.from_pretrained(model_name)

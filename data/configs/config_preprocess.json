@@ -1,0 +1,46 @@
+{
+  "PATHS": {
+    "VIDEO_FOLDER": "data/inputs/videos/",
+    "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
+    "AUDIO_FOLDER": "data/inputs/audio/",
+    "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
+    "UNIFORM_FRAMES_FOLDER": "data/inputs/uniform_frames/",
+    "UNIFORM_FRAMES_DYNAMIC_FOLDER": "data/inputs/uniform_frames_dynamic/"
+  },
+
+  "VIDEO_PROCESSING": {
+    "NUM_SEGMENTS": 30,
+    "INPUT_SIZE": 360
+  },
+
+  "FEATURES": {
+    "TRANSCRIBE_AUDIO": true,
+    "EXTRACT_KEY_FRAMES": true,
+    "EXTRACT_UNIFORM_FRAMES": true,
+    "EXTRACT_UNIFORM_FRAMES_DYNAMIC": true
+  },
+
+  "AUDIO_TRANSCRIPTION": {
+    "WHISPER_MODEL": "openai/whisper-large-v3",
+    "DEVICE_ID": 0,
+    "CHUNK_LENGTH_S": 30,
+    "BATCH_SIZE": 16
+  },
+
+  "KEY_FRAME_EXTRACTION": {
+    "DETECTION_MODE": "scenedetect",
+    "MAX_WORKERS": 8,
+    "JPEG_QUALITY": 85,
+    "THRESHOLD": 30.0,
+    "MIN_SCENE_LEN": 15
+  },
+
+  "UNIFORM_FRAME_EXTRACTION": {
+    "JPEG_QUALITY": 95
+  },
+
+  "SAMPLING": {
+    "SAMPLE": false,
+    "SAMPLE_SIZE": 2
+  }
+}

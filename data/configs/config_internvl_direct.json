@@ -1,0 +1,44 @@
+{
+  "PATHS": {
+    "VIDEO_FOLDER": "data/inputs/videos/",
+    "PROMPT_FILE": "data/prompt.txt",
+    "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
+    "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
+    "UNIFORM_FRAMES_FOLDER": "data/inputs/uniform_frames/",
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
+  },
+  
+  "OUTPUT": {
+    "OUTPUT_FOLDER": "data/outputs/internvl_78b"
+  },
+
+  "MODEL": {
+    "MODEL_NAME": "OpenGVLab/InternVL2_5-78B",
+    "MODEL_FAMILY": "internvl",
+    "MODEL_SUFFIX": "internvl_78b",
+    "LOAD_IN_8BIT": true,
+    "USE_DEVICE_MAP": false,
+    "MAX_TOKENS": 2048,
+    "TEMPERATURE": 0.1,
+    "TOP_P": 0.9
+  },
+
+  "VIDEO_PROCESSING": {
+    "NUM_SEGMENTS": 30,
+    "INPUT_SIZE": 360
+  },
+
+  "FEATURES": {
+    "USE_KEY_FRAMES": true,
+    "USE_UNIFORM_FRAMES": false
+  },
+
+  "SAMPLING": {
+    "SAMPLE": true,
+    "SAMPLE_SIZE": 4
+  },
+  
+  "EVALUATION": {
+    "CALCULATE_METRICS": false
+  }
+}

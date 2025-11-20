@@ -1,9 +1,0 @@
-{
-  "summary": "The video discusses a remarkable achievement by a young individual who built a 32-bit computer within the game Terraria. The narrator, who is a software engineer, expresses admiration for the project, highlighting the complexity and creativity involved. The video begins with the creator experimenting with Terraria's wiring system, discovering its potential for creating logic gates. These gates are demonstrated through examples like an AND gate, showing how they can be combined to form more complex circuits. The creator then progressed to building a prototype computer capable of calculating the Fibonacci sequence, showcasing the functionality of registers and arithmetic logic units (ALUs). The final product includes a fully functional CPU architecture with a custom instruction set, specifically the RISC-V instruction set. The video emphasizes the educational and entertaining nature of the project, encouraging viewers to explore the creator's channel 'From Scratch' for more details.",
-  "category": "Science & Technology",
-  "keywords": "Terraria, computer, software engineering, logic gates, AND gate, Fibonacci series, ALU, registers, instruction set, RISC-V, From Scratch, YouTube, 32-bit computer",
-  "creator_demographic": "Age Range: Unknown, Gender: Male, Geographic Location: Unknown",
-  "sentiment": "Positive",
-  "tone": "Enthusiastic",
-  "threatening_content": "No"
-}

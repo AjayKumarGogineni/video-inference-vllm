@@ -18,11 +18,10 @@ GEMINI_REQUEST_SLEEP_TIME = int(os.getenv("GEMINI_REQUEST_SLEEP_TIME", "30"))
 print(f"GEMINI_API_KEY: {GEMINI_API_KEY}")
 print(f"GEMINI_MODEL: {GEMINI_MODEL}")
 
-video_folder = "data/inputs/videos/"
-video_files = [file for file in os.listdir(video_folder) if file.endswith('.mp4')]
-video_files = video_files[:5]
+video_folder = os.getenv("VIDEO_FOLDER", "data/inputs/videos/")
+prompt_file = os.getenv("PROMPT_FILE", "data/prompt.txt")
 
-prompt_file = "data/prompt.txt"
+video_files = [file for file in os.listdir(video_folder) if file.endswith('.mp4')]
 with open(prompt_file, 'r') as file:
     prompt = file.read()
 

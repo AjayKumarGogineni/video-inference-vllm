@@ -1,246 +1,298 @@
 # Video Analysis Pipeline with Vision Language Models
 
-A modular pipeline for analyzing videos using Vision Language Models (VLMs). Supports key frame extraction, audio transcription, and structured JSON output generation. The current pipeline uses Qwen2.5-VL-32B-Instruct by default.
+A unified pipeline for analyzing videos using Vision Language Models (Qwen, InternVL) with vLLM inference.
 
-## Project Structure
+## Quick Start
 
-```
-.
-├── config.json              # Configuration file
-├── main.py                  # Main entry point
-├── requirements.txt         # Python dependencies
-├── utils/
-│   ├── config_loader.py    # Configuration loading
-│   ├── model_loader.py     # VLM model initialization
-│   ├── video_processor.py  # Video frame extraction
-│   ├── audio_processor.py  # Audio extraction & transcription
-│   ├── key_frame_extractor.py  # Key frame detection
-│   ├── gpu_monitor.py      # GPU memory monitoring
-│   └── statistics.py       # Statistics logging
-└── README.md
-```
-
-## Features
-
-- **Flexible Frame Loading**: Extract frames uniformly or use pre-extracted key frames
-- **Audio Transcription**: Automatic audio extraction and Whisper-based transcription
-- **Key Frame Extraction**: Scene-based key frame detection using PySceneDetect or OpenCV
-- **Structured Output**: JSON schema-enforced output using Pydantic models
-- **GPU Monitoring**: Track memory usage during inference
-- **Comprehensive Statistics**: Detailed timing and performance metrics
-
-
-## Clone the Repository
+### 1. Installation
 
 ```bash
-git clone <repository_url>
-```
-## Create virtual environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-Use the uv package manager for fast, reliable Python package installation and environment management.
-
-```bash
+# Create virtual environment
 pip install uv
 uv venv
 source .venv/bin/activate
-```
 
-## Installation
-
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-## Configuration
+### 2. Preprocessing (One-Time Setup)
 
-Edit `config_preprocess.json` file to set the parameters for pre-processing steps, audio transcription and key frame extraction.
-
-**PATHS**: Input/output directory paths
-- `VIDEO_FOLDER`: Source videos directory
-- `AUDIO_FOLDER`: Extracted audio files
-- `AUDIO_TRANSCRIPT_FOLDER`: Audio transcripts
-- `KEY_FRAMES_FOLDER`: Extracted key frames
-
-**FEATURES**: Toggle functionality
-- `TRANSCRIBE_AUDIO`: Enable audio transcription
-- `EXTRACT_KEY_FRAMES`: Run key frame extraction
-
-**SAMPLING**: Test on subset
-- `SAMPLE`: Enable sampling mode
-- `SAMPLE_SIZE`: Number of videos to process
-
-Edit `config_qwen.json` to customize the pipeline:
-
-### Key Configuration Options
-
-**PATHS**: Input/output directory paths
-- `VIDEO_FOLDER`: Source videos directory
-- `PROMPT_FILE`: System instruction prompt
-- `OUTPUT_FOLDER`: Generated JSON outputs (set via MODE)
-
-**MODEL**: VLM configuration
-- `MODEL_NAME`: HuggingFace model identifier
-- `MAX_TOKENS`: Maximum generation length
-- `TEMPERATURE`, `TOP_P`: Sampling parameters
-
-**VIDEO_PROCESSING**: Frame extraction settings
-- `NUM_SEGMENTS`: Number of frames to extract per video
-- `INPUT_SIZE`: Frame resize dimension
-
-**FEATURES**: Toggle functionality
-- `USE_KEY_FRAMES`: Use pre-extracted key frames instead of uniform sampling
-
-**SAMPLING**: Test on subset
-- `SAMPLE`: Enable sampling mode
-- `SAMPLE_SIZE`: Number of videos to process
-
-## Usage
-
-### Create ground truth using Gemini model
-
-Update the .env file with your Gemini API key.
+Extract frames and transcribe audio before inference:
 
 ```bash
-python create_ground_truth_gemini.py
+python preprocess.py data/configs/config_preprocess.json
 ```
-Reasons for failing:
-- The API call will fail if the number of requests per minute exceeds the quota. You can add a sleep timer in the script to avoid this issue.
-- The API can process a maximum of 60 minutes of video (3600 frames) in a single request which corresponds to 1 million tokens. 
-- The API can fail if the video has any sensitive content such as hate speech, adult content, violence etc.
 
-### Create ground truth using Openai model
-
-The openai models do not take the video as input directly. You need to extract the key frames and audio transcript first using the pipeline and then use those to create the ground truth using the openai models. Documentation: https://platform.openai.com/docs/models/gpt-4o-mini
-Reference code: https://platform.openai.com/docs/guides/images-vision?api-mode=responses&format=base64-encoded#analyze-images
-
-Update the .env file with your Openai API key.
-
-Run the create_ground_truth_openai.py script to create the ground truth using openai models.
+### 3. Run Inference
 
 ```bash
-python create_ground_truth_openai.py
+# Qwen models
+python main.py data/configs/config_qwen.json
+
+# InternVL models
+python main.py data/configs/config_internvl.json
 ```
 
+## Running Different Models
 
-### Basic Usage
-
-```bash
-python main.py
-```
-
-### Custom Config
-
-```bash
-python main.py path/to/custom_config.json
-```
-
-### Workflow Steps
-
-1. **[Required the first time the videos are loaded, can be set to false once the transcripts are generated] Transcribe Audio**: If `TRANSCRIBE_AUDIO: true`
-   - Runs BEFORE model loading
-   - Extracts audio as MP3 from videos
-   - Transcribes using Whisper Large V3
-   - Skips videos with existing transcripts
-
-2. **[Optional] Extract Key Frames**: If `EXTRACT_KEY_FRAMES: true`
-   - Runs BEFORE model loading
-   - Detects scene changes using PySceneDetect or OpenCV
-   - Saves frames to `KEY_FRAMES_FOLDER`
-   - Skips already processed videos
-
-3. **Load Model**: Initialize VLM with tensor parallelism
-
-4. **Load System Instructions**: Read instructions from `PROMPT_FILE`
-
-5. **Process Videos**:
-   - Load frames (uniform sampling or key frames)
-   - Load audio transcript
-   - Append the frames and the transcript to the system instructions to create a prompt
-   - Run inference: Pass the prompt to the Vision language model for generating response
-   - Save the generations as a JSON file, check the generations and update the system instructions if needed
-
-6. **Save Statistics**: Timing and memory metrics saved to `STATISTICS_FILE`
-
-## Output for Qwen and Intern vl scripts
-
-### Generated Files
-
-- `json/{VIDEO_ID}.json`: Structured analysis for each video
-- `csv/file_name.csv`: CSV summary of all videos
-- `missed_videos.txt`: List of failed videos
-- Statistics file: Comprehensive performance metrics
-- Bleu score for the generated summaries by comparing them with ground truth summaries and classification accuracy of the generated categories.
-
-### JSON Schema
-
-```python
+### Qwen Models
+```json
 {
-    "summary": str,
-    "category": str,
-    "color_composition": str,
-    "keywords": str,
-    "creator_demographic": str,
-    "political_leaning": str,
-    "misinformation_indicators": str,
-    "sentiment": str,
-    "tone": str,
-    "hateful_content": str,
-    "hateful_explanation": str,
-    "hateful_target": str,
-    "hateful_severity": str,
-    "graphic_content": str,
-    "threatening_content": str,
-    "illicit_content": str,
-    "self_harm": str
+  "MODEL": {
+    "MODEL_NAME": "Qwen/Qwen2.5-VL-32B-Instruct",
+    "MODEL_FAMILY": "qwen",
+    "MODEL_SUFFIX": "qwenvl_32b",
+    "DTYPE": "half",
+    "MAX_TOKENS": 2048,
+    "TEMPERATURE": 0.1,
+    "TOP_P": 0.9,
+    "REPETITION_PENALTY": 1.05
+  }
 }
 ```
 
-### Things required to change the output schema:
-- Change the system prompt file to include/exclude fields or modify instructions
-- Update the OutputJson class in utils/model_loader.py to reflect any schema changes
+**Available models:**
+- `Qwen/Qwen2.5-VL-7B-Instruct`
+- `Qwen/Qwen2.5-VL-32B-Instruct`
+- `Qwen/Qwen2.5-VL-32B-Instruct-AWQ` (quantized)
 
-## Performance Tracking
+### InternVL Models
+```json
+{
+  "MODEL": {
+    "MODEL_NAME": "OpenGVLab/InternVL2_5-26B",
+    "MODEL_FAMILY": "internvl",
+    "MODEL_SUFFIX": "internvl_26b",
+    "DTYPE": "half",
+    "MAX_TOKENS": 2048,
+    "TEMPERATURE": 0.1,
+    "TOP_P": 0.9,
+    "REPETITION_PENALTY": 1.05
+  }
+}
+```
 
-The pipeline tracks:
-- Model load time
-- Video load time per video
-- Inference time per video
-- GPU memory usage per video
-- Total processing time
+**Available models:**
+- `OpenGVLab/InternVL2_5-8B`
+- `OpenGVLab/InternVL2_5-26B`
+- `OpenGVLab/InternVL2_5-78B`
 
-Statistics are logged to console and saved to the configured statistics file.
+## Running on New Datasets
 
-## Requirements
+### 1. Update Config Paths
+```json
+{
+  "PATHS": {
+    "VIDEO_FOLDER": "path/to/your/videos/",
+    "PROMPT_FILE": "path/to/your/prompt.txt",
+    "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
+    "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
+    "UNIFORM_FRAMES_FOLDER": "data/inputs/uniform_frames/",
+    "GROUND_TRUTH_FILE": "path/to/ground_truth.csv"  // Optional
+  },
+  "OUTPUT": {
+    "OUTPUT_FOLDER": "data/outputs/your_experiment"
+  }
+}
+```
 
-- Python 3.11
-- CUDA-capable GPU
-- HuggingFace account (for model access) -> Optional
-- Sufficient disk space for videos and outputs
+### 2. Update System Prompt
+Edit your `PROMPT_FILE` to define what information the model should extract from videos.
+
+### 3. Run Preprocessing
+```bash
+python preprocess.py config_preprocess.json
+```
+
+### 4. Run Inference
+```bash
+python main.py config_your_model.json
+```
+
+## Adding New Models
+
+### 1. Create Model Loader
+Create `utils_{model_family}/model_loader.py`:
+
+```python
+def load_your_model(config):
+    from vllm import LLM, SamplingParams
+    
+    llm = LLM(
+        model=config["MODEL"]["MODEL_NAME"],
+        trust_remote_code=True,
+        dtype=config["MODEL"]["DTYPE"],
+        # Add model-specific parameters
+    )
+    
+    sampling = SamplingParams(
+        temperature=config["MODEL"]["TEMPERATURE"],
+        top_p=config["MODEL"]["TOP_P"],
+        max_tokens=config["MODEL"]["MAX_TOKENS"]
+    )
+    
+    return llm, sampling
+```
+
+### 2. Update main.py
+
+Add to `load_model_for_family()`:
+```python
+elif model_family == 'your_model':
+    from utils_your_model.model_loader import load_your_model
+    llm, sampling_params = load_your_model(config)
+    return llm, None, sampling_params, model_family, True
+```
+
+Add to `prepare_multimodal_input()`:
+```python
+elif model_family == 'your_model':
+    return prepare_your_model_input(images, audio_text, system_prompt)
+```
+
+Create `prepare_your_model_input()` function:
+```python
+def prepare_your_model_input(images, audio_text, system_prompt):
+    # Format prompt according to your model's requirements
+    prompt = f"Your model-specific prompt format with {len(images)} images"
+    
+    return {
+        "prompt": prompt,
+        "multi_modal_data": {"image": images}
+    }
+```
+
+### 3. Create Config File
+```json
+{
+  "MODEL": {
+    "MODEL_NAME": "your-org/your-model",
+    "MODEL_FAMILY": "your_model",
+    "MODEL_SUFFIX": "your_model_suffix",
+    "DTYPE": "half",
+    "MAX_TOKENS": 2048
+  }
+}
+```
+
+## Configuration Reference
+
+### Core Settings
+
+**PATHS**
+- `VIDEO_FOLDER`: Input videos directory
+- `PROMPT_FILE`: System instruction prompt
+- `AUDIO_TRANSCRIPT_FOLDER`: Audio transcripts location
+- `KEY_FRAMES_FOLDER`: Extracted key frames location
+- `UNIFORM_FRAMES_FOLDER`: Uniform frames location
+- `GROUND_TRUTH_FILE`: Ground truth for evaluation (optional)
+
+**MODEL**
+- `MODEL_NAME`: HuggingFace model ID
+- `MODEL_FAMILY`: `"qwen"` or `"internvl"`
+- `MODEL_SUFFIX`: Short name for output folders
+- `DTYPE`: `"half"` (fp16) or `"bfloat16"`
+- `MAX_TOKENS`: Maximum generation length
+- `TEMPERATURE`: Sampling temperature (0.0-1.0)
+- `TOP_P`: Nucleus sampling threshold
+- `REPETITION_PENALTY`: Repetition penalty (1.0 = no penalty)
+
+**VIDEO_PROCESSING**
+- `NUM_SEGMENTS`: Number of frames per video (recommended: 30)
+- `INPUT_SIZE`: Frame resize dimension (recommended: 360 or 224)
+
+**FEATURES**
+- `USE_KEY_FRAMES`: Use scene-based key frames (variable count)
+- `USE_UNIFORM_FRAMES`: Use uniformly sampled frames (fixed count)
+- If both false: Extract frames on-the-fly
+
+**SAMPLING**
+- `SAMPLE`: Process subset for testing
+- `SAMPLE_SIZE`: Number of videos to process
+
+**EVALUATION**
+- `CALCULATE_METRICS`: Enable/disable evaluation against ground truth
+
+### Preprocessing Configuration
+
+```json
+{
+  "FEATURES": {
+    "TRANSCRIBE_AUDIO": true,
+    "EXTRACT_KEY_FRAMES": false,
+    "EXTRACT_UNIFORM_FRAMES": true
+  },
+  "AUDIO_TRANSCRIPTION": {
+    "WHISPER_MODEL": "openai/whisper-large-v3",
+    "DEVICE_ID": 0,
+    "CHUNK_LENGTH_S": 30,
+    "BATCH_SIZE": 16
+  },
+  "KEY_FRAME_EXTRACTION": {
+    "DETECTION_MODE": "scenedetect",
+    "MAX_WORKERS": 8,
+    "JPEG_QUALITY": 85,
+    "THRESHOLD": 30.0,
+    "MIN_SCENE_LEN": 15
+  }
+}
+```
+
+## Output Structure
+
+```
+data/outputs/{model_suffix}_inputsize{size}_numframes{frames}/
+├── json/              # Per-video JSON responses
+├── csv/
+│   └── response.csv   # Aggregated results
+├── statistics/
+│   ├── inference_statistics.txt
+│   └── evaluation.json
+└── missed_videos.txt  # Failed videos with errors
+```
+
+## Memory Requirements
+
+- **Qwen 32B**: ~150GB GPU memory
+- **InternVL 26B**: ~145GB GPU memory
+- **InternVL 8B**: ~35GB GPU memory
+
+**Optimization tips:**
+- Reduce `NUM_SEGMENTS` to lower memory usage
+- Use key frames for variable frame counts
+- Set `SAMPLE: true` for testing
+
+## Troubleshooting
+
+**Out of Memory**
+- Reduce `NUM_SEGMENTS`
+- Use smaller model variant
+- Use key frames with lower threshold
+
+**Model Not Found**
+- Verify `MODEL_NAME` matches HuggingFace model ID
+- Set `HF_TOKEN` for gated models: `export HF_TOKEN=your_token`
+
+**Evaluation Skipped**
+- Evaluation only runs if `CALCULATE_METRICS: true` AND `GROUND_TRUTH_FILE` exists
+- Missing ground truth is not an error
+
+**Failed Videos**
+- Check `missed_videos.txt` for error details
+- Common issues: corrupted videos, missing audio, unsupported formats
 
 ## Environment Variables
 
 ```bash
-export HF_HOME=/path/to/huggingface/cache  # Optional: Custom HF cache location
+export HF_HOME=/path/to/cache          # HuggingFace cache
+export HF_TOKEN=your_token             # For gated models
+export CUDA_VISIBLE_DEVICES=0,1,2,3    # GPU selection
 ```
 
-## Notes
+## Requirements
 
-- Audio transcription uses Whisper Large V3 by default
-- Key frame extraction supports parallel processing
-- Model uses tensor parallelism across all available GPUs
-- All paths in config.json use absolute paths for cluster compatibility
-- The Qwen 32B model requires 150 GB of total GPU memory out of which 66 GB is needed to load the model and around 80GB is required for the KV cache used by VLLM during inference.
-
-## Troubleshooting
-
-**Out of Memory**: Reduce `NUM_SEGMENTS` or enable key frames with lower frame count
-
-**Missing Audio**: Some videos may not have audio tracks (logged as warnings)
-
-**Failed Videos**: Check `missed_videos.txt` for the list of videos that failed during processing
-
-**Slow Processing**: Adjust `MAX_WORKERS` for key frame extraction or check GPU utilization
+- Python 3.11+
+- CUDA-capable GPU(s)
+- Sufficient GPU memory (see Memory Requirements)
+- Disk space for videos, frames, and outputs
