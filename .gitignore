@@ -20,11 +20,15 @@ data/outputs/internvl_78b*/
 data/outputs/qwen_2.5_32b/*
 data/outputs/qwen_2.5_72b/*
 data/outputs/internvl_26b/*
+data/outputs/**
 
 data/inputs/videos/
 data/inputs/audio/
 data/inputs/audio_transcripts/
 data/inputs/key_frames/
 data/inputs/uniform_frames/
+data/inputs/uniform_frames_dynamic/
+
+data/configs/config_docker.json
 
 bash_scripts/**

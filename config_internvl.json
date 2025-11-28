@@ -9,13 +9,17 @@
   },
 
   "OUTPUT": {
-    "OUTPUT_FOLDER": "data/outputs/internvl_8b_v3"
+    "MODE": "internvl_26b",
+    "MODES": {
+      "internvl_26b": {
+        "OUTPUT_FOLDER": "data/outputs/internvl_26b"
+      }
+    }
   },
 
   "MODEL": {
-    "MODEL_NAME": "OpenGVLab/InternVL2_5-8B",
-    "MODEL_SUFFIX": "internvl_8b",
-    "MODEL_FAMILY": "internvl",
+    "MODEL_NAME": "OpenGVLab/InternVL2_5-26B",
+    "MODEL_SUFFIX": "internvl_26b",
     "DTYPE": "half",
     "MAX_TOKENS": 2048,
     "TEMPERATURE": 0.1,

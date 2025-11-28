@@ -1,0 +1,143 @@
+{
+  "PATHS": {
+    "VIDEO_FOLDER": "data/inputs/videos/",
+    "KEY_FRAMES_FOLDER": "data/inputs/key_frames/",
+    "UNIFORM_FRAMES_FOLDER": "data/inputs/uniform_frames/",
+    "AUDIO_TRANSCRIPT_FOLDER": "data/inputs/audio_transcripts/",
+    "PROMPT_FILE": "data/prompt.txt",
+    "GROUND_TRUTH_FILE": "data/outputs/gemini/csv/ground_truth_gemini.csv"
+  },
+  "OUTPUT": {
+    "OUTPUT_FOLDER": "data/outputs/docker"
+  },
+  "VIDEO_PROCESSING": {
+    "NUM_SEGMENTS": 30,
+    "INPUT_SIZE": 360
+  },
+  "FEATURES": {
+    "USE_KEY_FRAMES": true,
+    "USE_UNIFORM_FRAMES": false
+  },
+  "SAMPLING": {
+    "SAMPLE": true,
+    "SAMPLE_SIZE": 10
+  },
+  "MODEL": {
+    "AVAILABLE_KEYS": ["qwenvl7b", "qwenvl32b", "internvl26b"],
+    "SELECTED_KEY": "internvl26b",
+    "LOAD_DOCKER_CONTAINER": true,
+    "STOP_DOCKER_CONTAINER_AFTER_INFERENCE": true,
+    "DOCKER_IMAGE_TAR": "<DOCKER_PATH>/vllm-openai-latest.tar",
+    "HF_HOME": "<HF_HOME_PATH>",
+    "CONFIGS": {
+      "qwenvl7b": {
+        "MODEL_NAME": "Qwen/Qwen2.5-VL-7B-Instruct",
+        "MODEL_SUFFIX": "qwenvl7b",
+        "TOKENIZER_MODE": "auto",
+        "CONFIG_FORMAT": "auto",
+        "LOAD_FORMAT": "auto",
+        "TOOL_CALL_PARSER": "qwen3_xml",
+        "ENABLE_AUTO_TOOL_CHOICE": true,
+        "TENSOR_PARALLEL_SIZE": 1,
+        "DTYPE": "bfloat16",
+        "MAX_MODEL_LEN": 32768,
+        "GPU_MEMORY_UTILIZATION": 0.85,
+        "MAX_NUM_SEQS": 8,
+        "MAX_NUM_BATCHED_TOKENS": 16384,
+        "KV_CACHE_MEMORY_BYTES": 15000000000,
+        "REQUEST": {
+          "MAX_TOKENS": 1536,
+          "TEMPERATURE": 0.4,
+          "MAX_RETRIES": 3,
+          "RETRY_SLEEP_SECONDS": 5
+        },
+        "DOCKER": {
+          "IMAGE_NAME": "vllm/vllm-openai:latest",
+          "CONTAINER_NAME": "qwenvl7b-vllm",
+          "HOST_PORT": 8800,
+          "CONTAINER_PORT": 8000,
+          "GPUS": "all",
+          "IPC": "host",
+          "POST_LOAD_SLEEP_SECONDS": 400,
+          "POST_RUN_SLEEP_SECONDS": 600,
+          "HEALTHCHECK_RETRIES": 20,
+          "HEALTHCHECK_SLEEP_SECONDS": 6
+        }
+      },
+      "qwenvl32b": {
+        "MODEL_NAME": "Qwen/Qwen2.5-VL-32B-Instruct",
+        "MODEL_SUFFIX": "qwenvl32b",
+        "TOKENIZER_MODE": "auto",
+        "CONFIG_FORMAT": "auto",
+        "LOAD_FORMAT": "auto",
+        "TOOL_CALL_PARSER": "qwen3_xml",
+        "ENABLE_AUTO_TOOL_CHOICE": true,
+        "TENSOR_PARALLEL_SIZE": 2,
+        "DTYPE": "bfloat16",
+        "MAX_MODEL_LEN": 32768,
+        "GPU_MEMORY_UTILIZATION": 0.9,
+        "MAX_NUM_SEQS": 12,
+        "MAX_NUM_BATCHED_TOKENS": 32768,
+        "KV_CACHE_MEMORY_BYTES": 20000000000,
+        "REQUEST": {
+          "MAX_TOKENS": 2048,
+          "TEMPERATURE": 0.7,
+          "MAX_RETRIES": 3,
+          "RETRY_SLEEP_SECONDS": 5
+        },
+        "DOCKER": {
+          "IMAGE_NAME": "vllm/vllm-openai:latest",
+          "CONTAINER_NAME": "qwenvl32b-vllm",
+          "HOST_PORT": 8800,
+          "CONTAINER_PORT": 8000,
+          "GPUS": "all",
+          "IPC": "host",
+          "POST_LOAD_SLEEP_SECONDS": 400,
+          "POST_RUN_SLEEP_SECONDS": 600,
+          "HEALTHCHECK_RETRIES": 50,
+          "HEALTHCHECK_SLEEP_SECONDS": 6
+        }
+      },
+      "internvl26b": {
+        "MODEL_NAME": "OpenGVLab/InternVL2_5-26B",
+        "MODEL_SUFFIX": "internvl26b",
+        "TOKENIZER_MODE": "auto",
+        "CONFIG_FORMAT": "auto",
+        "LOAD_FORMAT": "auto",
+        "TOOL_CALL_PARSER": "internvl_xml",
+        "ENABLE_AUTO_TOOL_CHOICE": false,
+        "TENSOR_PARALLEL_SIZE": 4,
+        "DTYPE": "bfloat16",
+        "MAX_MODEL_LEN": 32768,
+        "GPU_MEMORY_UTILIZATION": 0.92,
+        "MAX_NUM_SEQS": 8,
+        "MAX_NUM_BATCHED_TOKENS": 20000,
+        "KV_CACHE_MEMORY_BYTES": 20000000000,
+        "REQUEST": {
+          "MAX_TOKENS": 2048,
+          "TEMPERATURE": 0.6,
+          "MAX_RETRIES": 3,
+          "RETRY_SLEEP_SECONDS": 5
+        },
+        "DOCKER": {
+          "IMAGE_NAME": "vllm/vllm-openai:latest",
+          "CONTAINER_NAME": "internvl26b-vllm",
+          "HOST_PORT": 8800,
+          "CONTAINER_PORT": 8000,
+          "GPUS": "all",
+          "IPC": "host",
+          "POST_LOAD_SLEEP_SECONDS": 240,
+          "POST_RUN_SLEEP_SECONDS": 240,
+          "HEALTHCHECK_RETRIES": 50,
+          "HEALTHCHECK_SLEEP_SECONDS": 8
+        }
+      }
+    }
+  },
+  "STATISTICS": {
+    "SAVE_DETAILED": true
+  },
+  "EVALUATION": {
+    "CALCULATE_METRICS": true
+  }
+}
