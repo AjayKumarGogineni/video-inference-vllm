@@ -258,9 +258,15 @@ Use `main_docker.py` when you want to spin up vLLM directly inside a docker cont
 Docker setup steps:
 
 Download the docker image:
+```
 docker pull vllm/vllm-openai:latest
+```
+
+Sve the docker image as a tar file which can be loaded later.
+```
 docker save vllm/vllm-openai:latest -o <DOCKER_PATH>/vllm-openai-latest.tar
-This will save the docker image as a tar file which can be loaded inside the script.
+```
+
 
 ### Running the pipeline
 
@@ -390,6 +396,8 @@ Once the model is loaded successfully, you should see a message like:
 ```
 Application startup completed.
 ```
+```
+Set LOAD_DOCKER_CONTAINER to false in the config file to skip loading the container again in the script.
 
 Open a new terminal, activate the venv and run the inference script:
 
