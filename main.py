@@ -5,6 +5,7 @@ import json
 import pandas as pd
 
 os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+os.environ["VLLM_BATCH_INVARIANT"] = "1"
 # os.environ['TORCH_CUDA_ARCH_LIST'] = '8.6'
 
 # from utils.config_loader import load_config

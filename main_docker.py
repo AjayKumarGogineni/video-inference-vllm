@@ -13,6 +13,7 @@ from PIL import Image
 from bert_score import score as bertscore_score
 from sklearn.metrics import accuracy_score, f1_score
 
+os.environ["VLLM_BATCH_INVARIANT"] = "1"
 
 def run_cmd(cmd, verbose=True):
     if verbose:
@@ -68,6 +69,21 @@ def resolve_model_config(config):
 
     if not resolved.get("MODEL_NAME"):
         raise ValueError("MODEL configuration must include MODEL_NAME")
+
+    # If the original MODEL section contained global metadata (e.g. paths
+    # to docker image tar or HF cache), preserve those at top-level so other
+    # functions (like start_docker_container) can find them even after we
+    # replace config['MODEL'] with the per-model resolved config.
+    for key in (
+        "DOCKER_IMAGE_TAR",
+        "HF_HOME",
+        "LOAD_DOCKER_CONTAINER",
+        "STOP_DOCKER_CONTAINER_AFTER_INFERENCE",
+    ):
+        # promote only if present in the original model_section and not
+        # already set at top-level (so explicit top-level keys win)
+        if key in model_section and key not in config:
+            config[key] = model_section[key]
 
     request_cfg = dict(resolved.get("REQUEST", {})) or dict(config.get("REQUEST", {}))
     docker_cfg = dict(resolved.get("DOCKER", {})) or dict(config.get("DOCKER", {}))
@@ -297,14 +313,27 @@ def wait_for_server(base_url, retries, sleep_seconds):
     return False
 
 
-def start_docker_container(config, model_name):
+def start_docker_container(config, model_name, log_folder=None):
     docker_cfg = config.get("DOCKER", {})
-    image_tar = config.get("DOCKER_IMAGE_TAR")
+    # Prefer top-level keys, but fall back to model-level values if present. This
+    # prevents losing important settings when resolve_model_config replaces
+    # config['MODEL'] with the selected sub-config.
+    image_tar = config.get("DOCKER_IMAGE_TAR") or config.get("MODEL", {}).get("DOCKER_IMAGE_TAR")
     if image_tar:
         if not os.path.exists(image_tar):
             raise FileNotFoundError(f"Docker image tar not found: {image_tar}")
         print("📦 Loading Docker image from tar…")
-        load_ok = run_cmd(["docker", "load", "-i", image_tar, "-q"])
+        # capture docker load output and save to log file if requested
+        load_cmd = ["docker", "load", "-i", image_tar, "-q"]
+        load_ok = run_cmd(load_cmd)
+        try:
+            if log_folder:
+                os.makedirs(log_folder, exist_ok=True)
+                with open(os.path.join(log_folder, "docker_load.log"), "w", encoding="utf-8") as lf:
+                    subprocess.run(load_cmd, stdout=lf, stderr=lf, text=True)
+        except Exception:
+            # non-fatal: we still continue based on load_ok
+            pass
         if not load_ok:
             raise RuntimeError("Docker image load failed; aborting container launch.")
         time.sleep(docker_cfg.get("POST_LOAD_SLEEP_SECONDS", 180))
@@ -322,7 +351,8 @@ def start_docker_container(config, model_name):
         "-p", f"{host_port}:{container_port}",
     ]
 
-    hf_home = config.get("HF_HOME")
+    # Prefer top-level HF_HOME but accept model-scoped HF_HOME as a fallback
+    hf_home = config.get("HF_HOME") or config.get("MODEL", {}).get("HF_HOME")
     if hf_home:
         cmd.extend(["-v", f"{hf_home}:/root/.cache/huggingface"])
     else:
@@ -332,7 +362,7 @@ def start_docker_container(config, model_name):
     cmd.append("-d")
     cmd.append(docker_cfg.get("IMAGE_NAME", "vllm/vllm-openai:latest"))
 
-    model_cfg = config["MODEL"]
+    model_cfg = config.get("MODEL", {})
     cmd.extend(["--model", model_name])
 
     if model_cfg.get("TOKENIZER_MODE"):
@@ -360,10 +390,20 @@ def start_docker_container(config, model_name):
         cmd.extend(extra_args)
 
     run_cmd(cmd)
+
+    # give the container a short moment to start, then capture docker logs
     time.sleep(docker_cfg.get("POST_RUN_SLEEP_SECONDS", 20))
+    try:
+        if log_folder:
+            os.makedirs(log_folder, exist_ok=True)
+            log_path = os.path.join(log_folder, f"docker_{container_name}.log")
+            with open(log_path, "w", encoding="utf-8") as lf:
+                proc = subprocess.run(["docker", "logs", container_name], stdout=lf, stderr=lf, text=True, timeout=30)
+    except Exception as exc:
+        print(f"⚠️  Could not save docker logs for {container_name}: {exc}")
 
 
-def ensure_vllm_server(config, model_name):
+def ensure_vllm_server(config, model_name, log_folder=None):
     docker_cfg = config.get("DOCKER", {})
     base_url = f"http://localhost:{docker_cfg.get('HOST_PORT', 8800)}/v1"
     start_time = time.time()
@@ -371,11 +411,20 @@ def ensure_vllm_server(config, model_name):
         print("✅ Reusing existing vLLM server")
         return base_url, 0.0, True
 
-    start_docker_container(config, model_name)
+    start_docker_container(config, model_name, log_folder=log_folder)
 
     retries = docker_cfg.get("HEALTHCHECK_RETRIES", 20)
     sleep_seconds = docker_cfg.get("HEALTHCHECK_SLEEP_SECONDS", 5)
     if not wait_for_server(base_url, retries, sleep_seconds):
+        # capture logs one more time before failing
+        try:
+            if log_folder:
+                os.makedirs(log_folder, exist_ok=True)
+                container_name = docker_cfg.get("CONTAINER_NAME", "vllm-container")
+                with open(os.path.join(log_folder, f"docker_{container_name}_final.log"), "w", encoding="utf-8") as lf:
+                    subprocess.run(["docker", "logs", container_name], stdout=lf, stderr=lf, text=True, timeout=30)
+        except Exception:
+            pass
         raise RuntimeError("vLLM server did not become ready in time")
 
     load_time = time.time() - start_time
@@ -386,7 +435,12 @@ def process_videos(config):
     total_start = time.time()
     model_cfg = resolve_model_config(config)
     model_name = model_cfg["MODEL_NAME"]
-    base_url, model_load_time, reused_server = ensure_vllm_server(config, model_name)
+
+    # create output folders early so we can save docker logs and other
+    # diagnostics into the stats folder while the container starts.
+    output_root, json_folder, csv_folder, stats_folder = setup_output_folders(config)
+
+    base_url, model_load_time, reused_server = ensure_vllm_server(config, model_name, log_folder=stats_folder)
     gpu_memory = get_gpu_memory_usage()
 
     system_prompt_file = config["PATHS"].get("PROMPT_FILE")
@@ -401,7 +455,6 @@ def process_videos(config):
         print("⚠️  No videos found to process.")
         return
 
-    output_root, json_folder, csv_folder, stats_folder = setup_output_folders(config)
     request_cfg = config.get("REQUEST", {})
     stats_cfg = config.get("STATISTICS", {})
     detailed_stats = stats_cfg.get("SAVE_DETAILED", True)
@@ -450,6 +503,9 @@ def process_videos(config):
 
         summary_dict.setdefault("summary", cleaned)
         summary_dict.setdefault("category", "Unknown")
+        summary_dict.update({
+            "video_id": video_id
+        })
         # summary_dict.update({
         #     "video_id": video_id,
         #     "model": model_name,
@@ -484,12 +540,12 @@ def process_videos(config):
         print("=" * 60)
         try:
             ground_truth = pd.read_csv(ground_truth_file)
-            common = set(ground_truth.video_id.astype(str)) & set(df.video_id.astype(str))
+            common = set(ground_truth.video_id.astype(str)) & set(df['video_id'].astype(str))
             if not common:
                 print("⚠️  No overlapping video IDs for evaluation.")
             else:
                 gt = ground_truth[ground_truth.video_id.astype(str).isin(common)].sort_values("video_id").reset_index(drop=True)
-                df_eval = df[df.video_id.astype(str).isin(common)].sort_values("video_id").reset_index(drop=True)
+                df_eval = df[df['video_id'].astype(str).isin(common)].sort_values("video_id").reset_index(drop=True)
                 eval_results = evaluate_with_stats(gt, df_eval)
                 with open(os.path.join(stats_folder, "evaluation.json"), "w", encoding="utf-8") as f:
                     json.dump(eval_results, f, indent=2)

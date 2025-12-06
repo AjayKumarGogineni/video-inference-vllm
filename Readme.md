@@ -267,6 +267,24 @@ Sve the docker image as a tar file which can be loaded later.
 docker save vllm/vllm-openai:latest -o <DOCKER_PATH>/vllm-openai-latest.tar
 ```
 
+If you want to provide access to other users on the clsuter, make sure the docker image tar file has read permissions for other users.
+```
+chmod 644 <DOCKER_PATH>/vllm-openai-latest.tar
+```
+
+Check the updated file permissions:
+```
+ls -l <DOCKER_PATH>/vllm-openai-latest.tar
+```
+
+It should show read permissions for other users like below:
+```
+-rw-r--r-- 1 user group size date time vllm-openai-latest.tar
+```
+
+Documenttaion: https://docs.vllm.ai/en/latest/deployment/docker/
+
+https://hub.docker.com/r/vllm/vllm-openai/tags
 
 ### Running the pipeline
 
@@ -356,6 +374,8 @@ Tip: Duplicate the `CONFIGS` entry for each model you need (e.g., `internvl26b`)
 | `EVALUATION.CALCULATE_METRICS` | Top-level | Enables BERTScore/category evaluation when ground-truth CSVs exist. |
 
 ## Docker debugging steps
+
+- Make sure TENSOR_PARALLEL_SIZE is set correctly based on the number of GPUs available.
 
 - Sometimes the docker container may fail to start within the script, such as for the InternVL 26B model. In such cases, try starting the container manually:
 
