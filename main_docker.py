@@ -85,8 +85,17 @@ def resolve_model_config(config):
         if key in model_section and key not in config:
             config[key] = model_section[key]
 
-    request_cfg = dict(resolved.get("REQUEST", {})) or dict(config.get("REQUEST", {}))
-    docker_cfg = dict(resolved.get("DOCKER", {})) or dict(config.get("DOCKER", {}))
+    # Merge top-level and model-level REQUEST and DOCKER settings.
+    # Model-level values should override global/top-level defaults.
+    request_cfg = dict(config.get("REQUEST", {}))
+    model_req = resolved.get("REQUEST") or {}
+    if isinstance(model_req, dict):
+        request_cfg.update(model_req)
+
+    docker_cfg = dict(config.get("DOCKER", {}))
+    model_docker = resolved.get("DOCKER") or {}
+    if isinstance(model_docker, dict):
+        docker_cfg.update(model_docker)
 
     config["MODEL"] = resolved
     config["REQUEST"] = request_cfg
@@ -226,13 +235,27 @@ def get_audio_transcript(video_id, config):
     return "No audio transcript available."
 
 
-def load_image_file_as_base64(img_path, input_size=None):
+def load_image_file_as_base64(img_path, input_size=None, img_format="PNG", quality=95):
+    """Load image, optionally resize, and return base64-encoded image bytes.
+
+    Parameters:
+    - img_path: path to the local image file
+    - input_size: if provided, resize to (input_size, input_size)
+    - img_format: output format, e.g. 'PNG' or 'JPEG'
+    - quality: JPEG quality (ignored for PNG)
+    """
     with open(img_path, "rb") as img_file:
         img = Image.open(img_file).convert("RGB")
         if input_size:
             img = img.resize((input_size, input_size), Image.LANCZOS)
         buffered = BytesIO()
-        img.save(buffered, format="PNG")
+        fmt = (img_format or "PNG").upper()
+        save_kwargs = {}
+        if fmt == "JPEG":
+            # reduce payload by using JPEG; quality configurable
+            save_kwargs["quality"] = int(quality)
+            save_kwargs["optimize"] = True
+        img.save(buffered, format=fmt, **save_kwargs)
         return b64encode(buffered.getvalue()).decode("utf-8")
 
 
@@ -248,31 +271,93 @@ def collect_frame_images(video_id, config):
     frame_folder = os.path.join(frames_root, video_id)
     if not os.path.exists(frame_folder):
         return []
-
-    input_size = config["VIDEO_PROCESSING"].get("INPUT_SIZE", 224)
-    images_b64 = []
-
+    # Return the list of frame file paths. Encoding (size/format/quality)
+    # is done later so we can retry with smaller payloads if needed.
+    image_paths = []
     for img_name in sorted(os.listdir(frame_folder)):
         if not img_name.lower().endswith((".png", ".jpg", ".jpeg")):
             continue
         img_path = os.path.join(frame_folder, img_name)
+        image_paths.append(img_path)
+    return image_paths
+
+
+def encode_images_for_request(image_paths, input_size, img_format, img_quality, max_images=None):
+    """Encode up to max_images from image_paths into base64 strings using provided parameters."""
+    imgs = []
+    paths = image_paths if (max_images is None or max_images >= len(image_paths)) else image_paths[:max_images]
+    for img_path in paths:
         try:
-            images_b64.append(load_image_file_as_base64(img_path, input_size))
+            imgs.append(load_image_file_as_base64(img_path, input_size, img_format, img_quality))
         except Exception as exc:
-            print(f"  ❌ Error loading image {img_name}: {exc}")
-    return images_b64
+            print(f"  ❌ Error encoding image {img_path}: {exc}")
+    return imgs
 
 
-def build_request_content(system_prompt, audio_text, images_b64):
+def request_with_fallback(system_prompt, audio_text, image_paths, base_url, request_cfg, config):
+    """Attempt to send a chat completion request; on persistent failures reduce payload
+    (fewer images and/or lower JPEG quality) and retry.
+
+    Returns the JSON response on success or raises the last exception on failure.
+    """
+    vp = config.get("VIDEO_PROCESSING", {})
+    input_size = vp.get("INPUT_SIZE", 224)
+    configured_format = vp.get("IMAGE_FORMAT", "JPEG")
+    configured_quality = int(vp.get("IMAGE_QUALITY", 80))
+    max_images_cfg = int(vp.get("MAX_IMAGES_PER_REQUEST", min(6, len(image_paths))))
+
+    # Build candidate (num_images, quality) pairs to try.
+    qualities = [configured_quality]
+    # if configured_quality > 60:
+    #     qualities += [60, 40]
+    # elif configured_quality > 40:
+    #     qualities += [40, 20]
+    # # ensure uniqueness and keep reasonable bounds
+    # qualities = [max(10, min(95, q)) for q in dict.fromkeys(qualities)]
+
+    num_images_list = []
+    n = max_images_cfg
+    while n >= 1:
+        num_images_list.append(n)
+        n = n // 2
+    if 1 not in num_images_list:
+        num_images_list.append(1)
+
+    last_exc = None
+    attempt = 0
+    for quality in qualities:
+        for num_images in num_images_list:
+            attempt += 1
+            print(f"  🔁 Attempt {attempt}: num_images={num_images}, quality={quality}")
+            images_b64 = encode_images_for_request(image_paths, input_size, configured_format, quality, max_images=num_images)
+            content = build_request_content(system_prompt, audio_text, images_b64, img_format=configured_format)
+            chat_data = {
+                "model": config["MODEL"]["MODEL_NAME"],
+                "messages": [{"role": "user", "content": content}],
+                "max_tokens": request_cfg.get("MAX_TOKENS", 2048),
+                "temperature": request_cfg.get("TEMPERATURE", 0.7)
+            }
+            try:
+                return send_chat_completion(chat_data, base_url, request_cfg)
+            except Exception as exc:
+                print(f"  ⚠️  Attempt failed: {exc}")
+                last_exc = exc
+                # continue to next fallback
+    # If we reach here, all fallbacks failed
+    raise last_exc if last_exc is not None else RuntimeError("All request attempts failed")
+
+
+def build_request_content(system_prompt, audio_text, images_b64, img_format="PNG"):
     content = [{
         "type": "text",
         "text": f"{system_prompt.strip()}\n\nAudio Transcript:\n{audio_text.strip()}"
     }]
 
+    mime = "jpeg" if str(img_format).upper() == "JPEG" else "png"
     for img_b64 in images_b64:
         content.append({
             "type": "image_url",
-            "image_url": {"url": f"data:image/png;base64,{img_b64}"}
+            "image_url": {"url": f"data:image/{mime};base64,{img_b64}"}
         })
     return content
 
@@ -281,7 +366,28 @@ def send_chat_completion(chat_data, base_url, request_cfg):
     endpoint = f"{base_url}/chat/completions"
     retries = request_cfg.get("MAX_RETRIES", 3)
     retry_sleep = request_cfg.get("RETRY_SLEEP_SECONDS", 5)
+    # Allow long-running model generations by default (1 hour), but
+    # allow this to be overridden via the config REQUEST.TIMEOUT_SECONDS
     timeout = request_cfg.get("TIMEOUT_SECONDS", 600)
+
+    # lightweight diagnostic: number of message parts and number of images
+    try:
+        msgs = chat_data.get("messages", [])
+        parts = 0
+        images = 0
+        if msgs:
+            # messages[0].content is a list of content parts in our caller
+            content = msgs[0].get("content")
+            if isinstance(content, list):
+                parts = len(content)
+                for p in content:
+                    if isinstance(p, dict) and p.get("type") == "image_url":
+                        images += 1
+        payload_size = len(json.dumps(chat_data))
+        print(f"  ℹ️  Sending request: message_parts={parts}, images={images}, approx_payload={payload_size} bytes, timeout={timeout}s")
+    except Exception:
+        # best-effort diagnostics; never fail the request because of this
+        pass
 
     for attempt in range(1, retries + 1):
         try:
@@ -385,6 +491,19 @@ def start_docker_container(config, model_name, log_folder=None):
     cmd.extend(["--max-num-batched-tokens", str(model_cfg.get("MAX_NUM_BATCHED_TOKENS", 32768))])
     cmd.extend(["--kv-cache-memory-bytes", str(model_cfg.get("KV_CACHE_MEMORY_BYTES", 20_000_000_000))])
 
+    # InternVL models need limit-mm-per-prompt to handle multiple images properly
+    limit_mm = model_cfg.get("LIMIT_MM_PER_PROMPT")
+    if limit_mm:
+        cmd.extend(["--limit-mm-per-prompt", limit_mm])
+
+    # Allow disabling chunked prefill (can help with some models)
+    if model_cfg.get("DISABLE_CHUNKED_PREFILL", False):
+        cmd.append("--disable-chunked-prefill")
+
+    # Allow setting enforce_eager for debugging/compatibility
+    if model_cfg.get("ENFORCE_EAGER", False):
+        cmd.append("--enforce-eager")
+
     extra_args = model_cfg.get("EXTRA_ARGS", [])
     if extra_args:
         cmd.extend(extra_args)
@@ -432,6 +551,67 @@ def ensure_vllm_server(config, model_name, log_folder=None):
 
 
 def process_videos(config):
+    """
+    Main entry point for video processing.
+    Wraps the actual processing in try/finally to ensure Docker container cleanup.
+    """
+    # Resolve model config early so we have DOCKER settings available for cleanup
+    model_cfg = resolve_model_config(config)
+    
+    try:
+        run_video_processing(config)
+    except Exception as exc:
+        print(f"\n❌ Fatal error during video processing: {exc}")
+        # Try to capture docker logs for debugging
+        stats_folder = config.get("_stats_folder")
+        if stats_folder:
+            capture_docker_logs_on_failure(config, stats_folder)
+        raise
+    finally:
+        # Always attempt to stop the Docker container
+        stop_docker_container_if_needed(config)
+
+
+def stop_docker_container_if_needed(config):
+    """Stop the Docker container based on config. Safe to call multiple times."""
+    stop_docker_container = config.get("STOP_DOCKER_CONTAINER_AFTER_INFERENCE", True)
+    if stop_docker_container:
+        docker_cfg = config.get("DOCKER", {})
+        container_name = docker_cfg.get("CONTAINER_NAME", "vllm-container")
+        print(f"🛑 Stopping Docker container {container_name}…")
+        run_cmd(["docker", "stop", container_name])
+    else:
+        print("⚠️  Docker container left running after inference.")
+
+
+def capture_docker_logs_on_failure(config, log_folder):
+    """Capture Docker logs when a failure occurs for debugging."""
+    try:
+        docker_cfg = config.get("DOCKER", {})
+        container_name = docker_cfg.get("CONTAINER_NAME", "vllm-container")
+        if log_folder:
+            os.makedirs(log_folder, exist_ok=True)
+            log_path = os.path.join(log_folder, f"docker_{container_name}_error.log")
+            with open(log_path, "w", encoding="utf-8") as lf:
+                subprocess.run(
+                    ["docker", "logs", "--tail", "200", container_name],
+                    stdout=lf, stderr=lf, text=True, timeout=30
+                )
+            print(f"📝 Docker logs saved to {log_path}")
+            # Also print last few lines to console
+            result = subprocess.run(
+                ["docker", "logs", "--tail", "20", container_name],
+                capture_output=True, text=True, timeout=30
+            )
+            if result.stdout or result.stderr:
+                print("  Docker logs:")
+                print(result.stdout or result.stderr)
+    except Exception as exc:
+        print(f"⚠️  Could not capture docker logs: {exc}")
+
+
+def run_video_processing(config):
+    """Main video processing logic, wrapped by process_videos for cleanup."""
     total_start = time.time()
     model_cfg = resolve_model_config(config)
     model_name = model_cfg["MODEL_NAME"]
@@ -439,6 +619,8 @@ def process_videos(config):
     # create output folders early so we can save docker logs and other
     # diagnostics into the stats folder while the container starts.
     output_root, json_folder, csv_folder, stats_folder = setup_output_folders(config)
+    # Store stats_folder in config so it can be accessed in finally block
+    config["_stats_folder"] = stats_folder
 
     base_url, model_load_time, reused_server = ensure_vllm_server(config, model_name, log_folder=stats_folder)
     gpu_memory = get_gpu_memory_usage()
@@ -468,30 +650,26 @@ def process_videos(config):
         print(f"\n[{idx}/{len(video_files)}] Processing {video_id}…")
 
         load_start = time.time()
-        images_b64 = collect_frame_images(video_id, config)
-        if not images_b64:
+        image_paths = collect_frame_images(video_id, config)
+        if not image_paths:
             print(f"  ⚠️  No frames found for {video_id}, skipping.")
             continue
 
         audio_text = get_audio_transcript(video_id, config)
-        content = build_request_content(system_prompt, audio_text, images_b64)
         load_time = time.time() - load_start
 
-        chat_data = {
-            "model": model_name,
-            "messages": [{"role": "user", "content": content}],
-            "max_tokens": request_cfg.get("MAX_TOKENS", 2048),
-            "temperature": request_cfg.get("TEMPERATURE", 0.7)
-        }
-
+        # Try sending the request with automatic fallbacks (fewer images / lower quality)
         inf_start = time.time()
         try:
-            result = send_chat_completion(chat_data, base_url, request_cfg)
+            result = request_with_fallback(system_prompt, audio_text, image_paths, base_url, request_cfg, config)
         except Exception as exc:
             print(f"  ❌ Request failed for {video_id}: {exc}")
+            # Capture docker logs for debugging
+            capture_docker_logs_on_failure(config, stats_folder)
             continue
 
         latency = time.time() - inf_start
+        # vLLM returns structured choices
         summary = result["choices"][0]["message"]["content"]
         cleaned = summary.replace("```json", "").replace("```", "").strip()
 
@@ -506,12 +684,6 @@ def process_videos(config):
         summary_dict.update({
             "video_id": video_id
         })
-        # summary_dict.update({
-        #     "video_id": video_id,
-        #     "model": model_name,
-        #     "response_time": latency,
-        #     "frame_count": len(images_b64)
-        # })
 
         responses.append(summary_dict)
         video_load_times.append(load_time)
@@ -521,7 +693,7 @@ def process_videos(config):
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(summary_dict, f, indent=2)
 
-        print(f"  ✅ Loaded in {load_time:.2f}s | Inference {latency:.2f}s | Frames {len(images_b64)}")
+        print(f"  ✅ Loaded in {load_time:.2f}s | Inference {latency:.2f}s | Frames {len(image_paths)}")
 
     if not responses:
         print("❌ No videos were processed successfully.")
@@ -571,15 +743,6 @@ def process_videos(config):
     )
 
     print(f"\n🎉 DONE — Full pipeline completed! Outputs stored in {output_root}")
-
-    stop_docker_container = config.get("STOP_DOCKER_CONTAINER_AFTER_INFERENCE", True)
-    if stop_docker_container:
-        docker_cfg = config.get("DOCKER", {})
-        container_name = docker_cfg.get("CONTAINER_NAME", "qwenvl32b-vllm")
-        print(f"🛑 Stopping Docker container {container_name}…")
-        run_cmd(["docker", "stop", container_name])
-    else:
-        print("⚠️  Docker container left running after inference.")
 
 def main():
     default_config = os.path.join(

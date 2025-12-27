@@ -10,16 +10,16 @@ main_sglang.py
 ## data folders
 data/outputs/qwenvl_32b_old/
 # data/outputs/qwenvl_32b_sglang/
-data/outputs/statistics_old/
+# data/outputs/statistics_old/
 
-data/outputs/internvl_26b*/
-data/outputs/qwenvl_32b_*/
+# data/outputs/internvl_26b*/
+# data/outputs/qwenvl_32b_*/
 
-data/outputs/internvl_78b*/
+# data/outputs/internvl_78b*/
 
-data/outputs/qwen_2.5_32b/*
-data/outputs/qwen_2.5_72b/*
-data/outputs/internvl_26b/*
+# data/outputs/qwen_2.5_32b/*
+# data/outputs/qwen_2.5_72b/*
+# data/outputs/internvl_26b/*
 data/outputs/**
 
 data/inputs/videos/
